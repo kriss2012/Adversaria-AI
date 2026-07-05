@@ -260,9 +260,26 @@ class VectorStore:
         query_embedding: list[float],
         top_k: int = 5,
     ) -> list[dict[str, Any]]:
+        """
+        Find moodboards visually similar to the query.
+
+        Note: moodboards use IMAGE_EMBEDDING_DIM (768-dim CLIP).
+        If a text query_embedding is passed (1024-dim voyage-3), we
+        truncate + renormalise to 768-dim so dimensions align.
+        This is a safe approximation for moodboard recall (not precision scoring).
+        """
+        import numpy as np  # noqa: PLC0415
+
+        q = np.array(query_embedding, dtype=np.float32)
+        if len(q) != IMAGE_EMBEDDING_DIM:
+            q = q[:IMAGE_EMBEDDING_DIM]
+            norm = np.linalg.norm(q)
+            if norm > 0:
+                q = q / norm
+
         results = await self.client.search(
             collection_name=MOODBOARDS_COLLECTION,
-            query_vector=query_embedding,
+            query_vector=q.tolist(),
             query_filter=models.Filter(
                 must=[
                     models.FieldCondition(
