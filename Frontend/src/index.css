@@ -1,15 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 
 :root {
-  --bg-color: #fcfcfc;
-  --sidebar-bg: #ffffff;
-  --border-color: #e5e7eb;
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --primary-color: #000000;
-  --primary-hover: #374151;
-  --accent-color: #2563eb;
+  --bg-color: #fbfcf8;
+  --sidebar-bg: #ecf1eb;
+  --border-color: #d1d5db;
+  --text-main: #2d3748;
+  --text-muted: #4b5563;
+  --primary-color: #002b24;
+  --primary-hover: #004d40;
+  --accent-color: #6b805d;
+  --accent-light: #86efac;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --card-bg: #ffffff;
 }
 
