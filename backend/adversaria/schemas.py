@@ -136,6 +136,7 @@ class RationaleTrace(BaseModel):
     color_palette: ColorPalette
     layout_spec: LayoutSpec
     decisions: list[RationaleDecision]
+    market_signal_hypothesis: str | None = None   # Director's competitive gap analysis
     competitor_gap: str | None = None
     hanlon_reframe: str | None = None  # if prior feedback was reanalyzed
     suggested_iterations: list[str] = Field(default_factory=list)
