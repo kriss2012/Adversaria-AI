@@ -463,8 +463,13 @@ async def eval_harness_node(state: DesignState) -> dict[str, Any]:
         embedding_distance_to_history=avg_distance,
     )
 
+    # Embed concept_embedding into eval_scores dict so it can be retrieved
+    # later by the taste-signal route without a separate Redis/DB lookup.
+    scores_dict = scores.model_dump()
+    scores_dict["concept_embedding"] = concept_embedding
+
     return {
-        "eval_scores": scores.model_dump(),
+        "eval_scores": scores_dict,
         "concept_embedding": concept_embedding,
     }
 
