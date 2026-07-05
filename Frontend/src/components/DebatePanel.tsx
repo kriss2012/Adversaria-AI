@@ -101,7 +101,7 @@ export const DebatePanel: React.FC<DebatePanelProps> = ({ round }) => {
 
   if (!round) {
     return (
-      <div className="glass-panel p-6 flex flex-col" style={{ gap: '12px', minHeight: '320px', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="flex flex-col flex flex-col" style={{ gap: '12px', minHeight: '320px', justifyContent: 'center', alignItems: 'center' }}>
         <Scale size={36} style={{ color: 'var(--text-dark)', opacity: 0.4 }} />
         <p style={{ color: 'var(--text-muted)', textAlign: 'center', fontSize: '14px' }}>
           Run the pipeline to see the adversarial critique panel debate a generated concept.
@@ -117,7 +117,7 @@ export const DebatePanel: React.FC<DebatePanelProps> = ({ round }) => {
   }[round.finalVerdict];
 
   return (
-    <div className="glass-panel p-6 flex flex-col animate-fade-in" style={{ gap: '16px' }}>
+    <div className="flex flex-col flex flex-col animate-fade-in" style={{ gap: '16px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
