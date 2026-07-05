@@ -172,3 +172,64 @@ async def _ingest_assets_async(brand_id: str, s3_keys: list[str]) -> dict[str, A
     from adversaria.services.ingestion import ingest_brand_assets  # noqa: PLC0415
     result = await ingest_brand_assets(brand_id, s3_keys)
     return result
+
+
+# ─── Task: localized inpainting ───────────────────────────────────────────────
+
+@celery_app.task(
+    bind=True,
+    name="adversaria.run_inpaint",
+    max_retries=2,
+    default_retry_delay=15,
+)
+def run_inpaint_task(
+    self,
+    task_id: str,
+    gen_task_dict: dict[str, Any],
+    image_url: str,
+    mask_url: str,
+) -> dict[str, Any]:
+    """
+    Runs localized regeneration (inpainting) via the ComfyUI flux_inpaint workflow.
+    Preserves the rest of the composition — only the masked region is repainted.
+    Result URL is stored in Redis under key inpaint:{task_id}.
+    """
+    return asyncio.get_event_loop().run_until_complete(
+        _run_inpaint_async(self, task_id, gen_task_dict, image_url, mask_url)
+    )
+
+
+async def _run_inpaint_async(
+    task,
+    task_id: str,
+    gen_task_dict: dict[str, Any],
+    image_url: str,
+    mask_url: str,
+) -> dict[str, Any]:
+    from adversaria.schemas import GenTask  # noqa: PLC0415
+    from adversaria.services.generation_router import get_generation_router  # noqa: PLC0415
+    import redis.asyncio as aioredis  # noqa: PLC0415
+
+    redis_client = aioredis.from_url(_settings.redis_url)
+
+    async def publish(status: str, extra: dict | None = None) -> None:
+        payload = json.dumps({"task_id": task_id, "status": status, **(extra or {})})
+        await redis_client.publish(f"job:{task_id}", payload)
+        # Also set a key so polling clients can check
+        await redis_client.setex(f"inpaint:{task_id}", 3600, payload)
+
+    try:
+        await publish("starting")
+        gen_task = GenTask(**gen_task_dict)
+        router = get_generation_router()
+        output_url = await router.generate_inpaint(gen_task, image_url, mask_url)
+        await publish("complete", {"generated_image_url": output_url})
+        await redis_client.aclose()
+        return {"task_id": task_id, "status": "complete", "generated_image_url": output_url}
+
+    except Exception as exc:
+        logger.exception("Inpaint task failed for %s", task_id)
+        await publish("error", {"error": str(exc)})
+        await redis_client.aclose()
+        raise task.retry(exc=exc, countdown=15) from exc
+
