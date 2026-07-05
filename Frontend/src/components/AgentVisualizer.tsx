@@ -22,7 +22,7 @@ export const AgentVisualizer: React.FC<AgentVisualizerProps> = ({
   ];
 
   return (
-    <div className="glass-panel p-6 animate-fade-in" style={{ gap: '20px', minHeight: '450px' }}>
+    <div className="flex flex-col animate-fade-in" style={{ gap: '20px', minHeight: '450px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
