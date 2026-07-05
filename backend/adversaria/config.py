@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     langchain_tracing_v2: bool = True
     langchain_api_key: str = ""
     langchain_project: str = "adversaria-ai"
+    langchain_endpoint: str = "https://api.smith.langchain.com"
 
     # ── Voyage AI ─────────────────────────────────────────────────────────────
     voyage_api_key: str = ""
@@ -73,6 +74,7 @@ class Settings(BaseSettings):
     firefly_client_id: str = ""
     firefly_client_secret: str = ""
     comfyui_url: str = "http://localhost:8188"
+    comfyui_workflow_dir: str = "comfyui_workflows"
 
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: list[str] = Field(
