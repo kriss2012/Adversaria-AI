@@ -111,7 +111,7 @@ export const EvalDashboard: React.FC<EvalDashboardProps> = ({ currentScores, his
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Current Concept Scores */}
-      <div className="glass-panel p-6 animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="flex flex-col animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -179,7 +179,7 @@ export const EvalDashboard: React.FC<EvalDashboardProps> = ({ currentScores, his
 
       {/* Run History */}
       {history.length > 0 && (
-        <div className="glass-panel p-6" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="flex flex-col" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
             <History style={{ color: 'var(--color-secondary)', width: '18px', height: '18px' }} />
             Concept History
