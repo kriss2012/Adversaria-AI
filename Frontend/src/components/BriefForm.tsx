@@ -1,17 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, FileText, CheckCircle2, Play, Info, Sparkles, HelpCircle } from 'lucide-react';
+import type { BriefData } from '../types';
 
 interface BriefFormProps {
   onSubmit: (data: BriefData) => void;
   isGenerating: boolean;
-}
-
-export interface BriefData {
-  brandName: string;
-  platform: string;
-  tone: string;
-  files: string[];
-  prompt: string;
 }
 
 export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) => {
@@ -70,37 +63,28 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="glass-panel p-6 flex flex-col" style={{ gap: '16px', height: '100%' }}>
+    <form onSubmit={handleSubmit} className="flex flex-col" style={{ gap: '16px', height: '100%' }}>
       <div>
-        <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles className="text-secondary" style={{ color: 'var(--color-secondary)', width: '20px', height: '20px' }} />
+        <h3 className="voyage-page-title" style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles size={18} style={{ color: 'var(--accent-color)' }} />
           Creative Brief Workshop
         </h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '2px' }}>
+        <p className="voyage-page-subtitle" style={{ marginBottom: '16px', marginTop: '2px' }}>
           Define the creative guidelines and targets for Adversaria's Agentic Panel.
         </p>
       </div>
 
       {/* Brand Selection */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-main)', display: 'flex', justifyContent: 'space-between' }}>
+      <div className="flex flex-col gap-2">
+        <label className="voyage-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
           Brand Persona
-          <span style={{ fontSize: '11px', color: 'var(--color-primary-light)', cursor: 'pointer' }}>+ New Brand</span>
+          <span style={{ fontSize: '11px', color: 'var(--accent-color)', cursor: 'pointer', fontWeight: 600 }}>+ New Brand</span>
         </label>
         <select 
+          className="voyage-input"
           value={brandName}
           onChange={(e) => setBrandName(e.target.value)}
           disabled={isGenerating}
-          style={{
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border-light)',
-            color: 'var(--text-main)',
-            borderRadius: '8px',
-            padding: '10px',
-            fontSize: '14px',
-            outline: 'none',
-            fontFamily: 'var(--font-sans)'
-          }}
         >
           <option value="AuraFit - Gym Wear">AuraFit (Gym Wear, Youth, Vibrant Neon Purple)</option>
           <option value="KiriApp - Tech Recruiting">KiriApp (Tech Job Recruiting, Minimalist Indigo)</option>
@@ -110,21 +94,13 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
 
       {/* Format / Target Platform */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 500 }}>Target Platform</label>
+        <div className="flex flex-col gap-2">
+          <label className="voyage-label">Target Platform</label>
           <select 
+            className="voyage-input"
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
             disabled={isGenerating}
-            style={{
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-light)',
-              color: 'var(--text-main)',
-              borderRadius: '8px',
-              padding: '10px',
-              fontSize: '13px',
-              outline: 'none'
-            }}
           >
             <option value="Instagram Feed Post (1:1)">Instagram Feed (1:1)</option>
             <option value="LinkedIn Single Image (4:5)">LinkedIn (4:5)</option>
@@ -132,21 +108,13 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
           </select>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 500 }}>Tone Profile</label>
+        <div className="flex flex-col gap-2">
+          <label className="voyage-label">Tone Profile</label>
           <select 
+            className="voyage-input"
             value={tone}
             onChange={(e) => setTone(e.target.value)}
             disabled={isGenerating}
-            style={{
-              background: 'var(--bg-input)',
-              border: '1px solid var(--border-light)',
-              color: 'var(--text-main)',
-              borderRadius: '8px',
-              padding: '10px',
-              fontSize: '13px',
-              outline: 'none'
-            }}
           >
             <option value="Energetic & Futuristic">Energetic & Bold</option>
             <option value="Minimalist & Authoritative">Minimalist & Clean</option>
@@ -229,26 +197,15 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
       </div>
 
       {/* Main Creative Prompt */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexGrow: 1 }}>
-        <label style={{ fontSize: '13px', fontWeight: 500 }}>Creative Concept Prompt</label>
+      <div className="flex flex-col gap-2 flex-grow">
+        <label className="voyage-label">Creative Concept Prompt</label>
         <textarea
+          className="voyage-input"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           disabled={isGenerating}
           rows={3}
-          style={{
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border-light)',
-            color: 'var(--text-main)',
-            borderRadius: '8px',
-            padding: '10px',
-            fontSize: '13px',
-            outline: 'none',
-            resize: 'none',
-            flexGrow: 1,
-            fontFamily: 'var(--font-sans)',
-            lineHeight: '1.4'
-          }}
+          style={{ resize: 'none', flexGrow: 1 }}
           placeholder="E.g., Design a high-impact product ad showing our new neon jacket with bold futuristic text..."
         />
       </div>
@@ -256,18 +213,17 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
       {/* Submit Button */}
       <button 
         type="submit" 
-        className="glow-btn" 
+        className="voyage-button mt-4" 
         disabled={isGenerating || !prompt}
-        style={{ justifyContent: 'center', padding: '12px' }}
       >
         {isGenerating ? (
           <>
-            <span className="animate-spin" style={{ marginRight: '6px' }}>⚙️</span>
-            Executing Agentic Pipeline...
+            <span className="animate-spin">⚙️</span>
+            Executing Pipeline...
           </>
         ) : (
           <>
-            <Play size={16} fill="white" />
+            <Play size={16} />
             Synthesize Design Concept
           </>
         )}
