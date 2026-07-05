@@ -48,13 +48,15 @@ body {
 }
 
 .voyage-logo {
+  font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 40px;
   padding-left: 8px;
+  color: var(--primary-color);
 }
 
 .voyage-nav {
@@ -100,7 +102,7 @@ body {
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  justifyContent: flex-end;
+  justify-content: flex-end;
   padding: 0 32px;
   background: var(--bg-color);
   position: sticky;
@@ -116,10 +118,11 @@ body {
 }
 
 .voyage-page-title {
-  font-size: 24px;
+  font-family: var(--font-serif);
+  font-size: 28px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: var(--text-main);
+  color: var(--primary-color);
 }
 
 .voyage-page-subtitle {
