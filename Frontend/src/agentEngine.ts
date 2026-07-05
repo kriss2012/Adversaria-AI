@@ -1,8 +1,4 @@
-import { AgentLog } from './components/AgentVisualizer';
-import { DebateRound, CriticVote } from './components/DebatePanel';
-import { EvalScores, HistoricalEntry } from './components/EvalDashboard';
-import { RationaleTrace } from './components/RationalePanel';
-import { BriefData } from './components/BriefForm';
+import type { AgentLog, DebateRound, CriticVote, EvalScores, HistoricalEntry, RationaleTrace, BriefData } from './types';
 
 // ─── STEP TYPES ──────────────────────────────────────────────────────────────
 export interface SimStep {
