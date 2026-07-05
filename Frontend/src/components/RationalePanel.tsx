@@ -43,7 +43,7 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
 
   if (!rationale) {
     return (
-      <div className="glass-panel p-6" style={{ minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+      <div className="flex flex-col" style={{ minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
         <FileText size={32} style={{ color: 'var(--text-dark)', opacity: 0.3 }} />
         <p style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center' }}>
           Explainable Design Rationale (XDR) trace will appear here after generation.
@@ -53,7 +53,7 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
   }
 
   return (
-    <div className="glass-panel p-6 animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="flex flex-col animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
         <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <GitBranch style={{ color: '#a78bfa', width: '20px', height: '20px' }} />
