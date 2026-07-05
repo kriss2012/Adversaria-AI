@@ -3,11 +3,12 @@ adversaria/api/routes.py — FastAPI route definitions.
 
 Endpoints:
   POST   /v1/brands                    — create a brand
-  POST   /v1/brands/{id}/ingest        — upload + ingest assets
+  POST   /v1/brands/{id}/assets        — upload + ingest brand assets
   POST   /v1/jobs                      — submit a brief (queues pipeline)
   GET    /v1/jobs/{id}                 — poll job status
   POST   /v1/jobs/{id}/approve         — HITL approval / rejection
   POST   /v1/jobs/{id}/taste-signal    — report performance signal
+  POST   /v1/jobs/{id}/inpaint         — localized regeneration (mask one element)
   GET    /v1/jobs/{id}/stream          — SSE real-time progress stream
   GET    /v1/brands/{id}/eval-history  — eval history for dashboard
 """
@@ -34,10 +35,12 @@ from adversaria.schemas import (
     DesignState,
     HumanFeedbackRequest,
     JobStatusResponse,
+    Platform,
     TasteSignalRequest,
     TasteVector,
 )
 from adversaria.services.embeddings import get_embedding_service
+from adversaria.services.generation_router import get_generation_router, PLATFORM_SPECS
 
 _settings = get_settings()
 router = APIRouter(prefix="/v1")
@@ -217,7 +220,7 @@ async def approve_or_reject_job(
         raise HTTPException(400, f"Job is not awaiting human review (status: {job.status})")
 
     job.human_approved = req.approved
-    job.human_feedback_text = req.feedback if hasattr(req, 'feedback') else ""
+    job.human_feedback = req.feedback
     job.status = "approved" if req.approved else "iterating"
     await db.flush()
 
@@ -264,17 +267,28 @@ async def record_taste_signal(
 ) -> dict[str, Any]:
     """
     Records a performance signal (CTR, engagement, or manual +1/-1)
-    and updates the brand's taste vector.
+    and updates the brand's taste vector using the concept embedding
+    stored when eval_harness ran.
     """
     brand = await db.get(Brand, req.brand_id)
     if not brand:
         raise HTTPException(404, "Brand not found")
 
     job = await db.get(DesignJob, job_id)
-    concept_embedding = []
+    concept_embedding: list[float] = []
+
+    # Retrieve concept_embedding stored in FeedbackEntry from the approve/reject call,
+    # or fall back to a text embedding of the concept's headline from eval_scores.
     if job and job.eval_scores and isinstance(job.eval_scores, dict):
-        # In practice, concept_embedding would be stored in FeedbackEntry or Redis
-        pass
+        # The eval_harness node stores concept_embedding in DesignState;
+        # the Celery task persists eval_scores to the job.  If we stored the
+        # embedding alongside eval_scores, retrieve it here.
+        concept_embedding = job.eval_scores.get("concept_embedding", [])
+
+    if not concept_embedding and job and job.brief:
+        # Fallback: embed the brief as a proxy for the concept vector
+        emb_service = get_embedding_service()
+        concept_embedding = await emb_service.embed_query(job.brief)
 
     # Update taste vector
     emb = get_embedding_service()
@@ -289,13 +303,17 @@ async def record_taste_signal(
         brand.taste_vector = updated_tv
         brand.taste_signal_count = (brand.taste_signal_count or 0) + 1
 
-    # Log signal
+    # Log signal with the embedding snapshot for future XGBoost retraining
     fb = FeedbackEntry(
         brand_id=req.brand_id,
         job_id=job_id,
         concept_id=req.concept_id,
         signal_type="performance",
         reward=req.reward,
+        concept_embedding=concept_embedding if concept_embedding else None,
+        brand_fit_score=job.eval_scores.get("brand_fit_score") if job and job.eval_scores else None,
+        novelty_score=job.eval_scores.get("novelty_score") if job and job.eval_scores else None,
+        predicted_performance_score=job.eval_scores.get("predicted_performance_score") if job and job.eval_scores else None,
     )
     db.add(fb)
     await db.flush()
@@ -304,6 +322,7 @@ async def record_taste_signal(
         "brand_id": req.brand_id,
         "taste_signals_total": brand.taste_signal_count,
         "reward_applied": req.reward,
+        "embedding_captured": bool(concept_embedding),
     }
 
 
@@ -396,3 +415,85 @@ def _guess_asset_type(filename: str) -> str:
     if ext in {"png", "jpg", "jpeg", "webp"}:
         return "moodboard"
     return "other"
+
+
+# ────────────────────────────────────────────────────────────────────────────────
+# Localized regeneration (inpainting) — preserves the full composition
+# ────────────────────────────────────────────────────────────────────────────────
+
+class InpaintRequest(BaseModel):
+    """Request body for localized element regeneration."""
+    brand_id: str
+    concept_id: str
+    nudge_prompt: str   # What to regenerate in the masked region
+    platform: Platform
+    image_url: str      # The base image to inpaint onto
+    mask_url: str       # Black-and-white mask: white = regenerate, black = preserve
+
+    # Import here to avoid circular schema import
+    class Config:
+        from_attributes = True
+
+
+@router.post("/jobs/{job_id}/inpaint", status_code=202)
+async def localized_inpaint(
+    job_id: str,
+    req: InpaintRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """
+    Localized regeneration: nudge a single element in a generated concept
+    without rerolling the entire composition.
+
+    The client provides:
+      - image_url: the full generated image (from a completed job)
+      - mask_url:  a white-on-black mask indicating which region to regenerate
+      - nudge_prompt: description of the new element to paint in
+
+    Routes to ComfyUI flux_inpaint workflow.
+    Returns immediately with a task_id; poll /v1/jobs/{task_id} for status.
+    """
+    from adversaria.schemas import GenTask, LayoutSpec, ColorPalette  # noqa: PLC0415
+    from adversaria.workers.celery_app import run_inpaint_task  # noqa: PLC0415
+
+    # Build a minimal GenTask so the router can resolve backend + platform spec
+    default_palette = ColorPalette(
+        primary="#7C3AED", secondary="#06b6d4",
+        accent="#f59e0b", background="#0F172A", text="#F1F5F9",
+    )
+    specs = PLATFORM_SPECS.get(req.platform.value, {"width": 1080, "height": 1080})
+    layout = LayoutSpec(
+        canvas_width=specs["width"], canvas_height=specs["height"],
+        product_area_pct=0.4, headline_position="top_left",
+        cta_position="bottom_center", logo_position="bottom_left",
+        typeface_primary="Space Grotesk 700",
+        color_palette=default_palette, background_style="dark_gradient",
+    )
+    gen_task = GenTask(
+        concept_id=req.concept_id,
+        prompt=req.nudge_prompt,
+        layout_spec=layout,
+        brand_id=req.brand_id,
+        needs_brand_typography=False,
+        budget_tier="standard",
+        requires_licensing_safety=False,
+        platform=req.platform,
+        backend_override=None,
+    )
+
+    inpaint_task_id = str(uuid.uuid4())
+    run_inpaint_task.apply_async(
+        args=[
+            inpaint_task_id,
+            gen_task.model_dump(mode="json"),
+            req.image_url,
+            req.mask_url,
+        ],
+        task_id=inpaint_task_id,
+    )
+
+    return {
+        "task_id": inpaint_task_id,
+        "status": "queued",
+        "message": "Inpainting queued — poll /v1/jobs/{task_id} for the output URL",
+    }
