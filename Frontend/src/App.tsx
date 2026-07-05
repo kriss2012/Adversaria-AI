@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import './index.css';
-import { BriefForm, BriefData } from './components/BriefForm';
-import { AgentVisualizer, AgentLog } from './components/AgentVisualizer';
-import { DebatePanel, DebateRound } from './components/DebatePanel';
-import { EvalDashboard, EvalScores, HistoricalEntry } from './components/EvalDashboard';
-import { RationalePanel, RationaleTrace } from './components/RationalePanel';
+import { BriefForm } from './components/BriefForm';
+import { AgentVisualizer } from './components/AgentVisualizer';
+import { DebatePanel } from './components/DebatePanel';
+import { EvalDashboard } from './components/EvalDashboard';
+import { RationalePanel } from './components/RationalePanel';
+import type { AgentLog, DebateRound, EvalScores, HistoricalEntry, RationaleTrace, BriefData } from './types';
 import { runAgentSimulation } from './agentEngine';
 import { Sparkles, Bot, Scale, BarChart3, GitBranch, Key, Activity, Settings, LayoutDashboard, User } from 'lucide-react';
 
