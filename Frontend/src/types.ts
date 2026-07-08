@@ -1,10 +1,8 @@
-// Shared types used across agent components
-
 export interface AgentLog {
   agentName: string;
   role: string;
   message: string;
-  status: 'thinking' | 'done' | 'idle';
+  status: 'thinking' | 'done' | 'idle' | 'error';
   timestamp: string;
 }
 
