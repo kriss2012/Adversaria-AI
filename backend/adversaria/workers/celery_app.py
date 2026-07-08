@@ -52,9 +52,7 @@ def run_pipeline_task(self, job_id: str, state_dict: dict[str, Any]) -> dict[str
     Called by FastAPI after validating the brief request.
     Updates job status in Postgres at each major step via Redis pub/sub.
     """
-    return asyncio.get_event_loop().run_until_complete(
-        _run_pipeline_async(self, job_id, state_dict)
-    )
+    return asyncio.run(_run_pipeline_async(self, job_id, state_dict))
 
 
 async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> dict[str, Any]:
@@ -117,10 +115,17 @@ async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> 
                 job.creative_strategy = final_state.creative_strategy
                 job.spawned_agents = final_state.spawned_agents
                 job.layout_spec = final_state.layout_spec
-                job.critique_log = final_state.critique_log[-1] if final_state.critique_log else None
+                # Persist FULL debate history, not just the last round
+                job.critique_log = [
+                    c if isinstance(c, dict) else c.model_dump()
+                    for c in final_state.critique_log
+                ]
                 job.rationale = final_state.rationale
                 job.eval_scores = final_state.eval_scores
                 job.generated_image_url = final_state.generated_image_url
+                job.iteration = final_state.iteration
+                from datetime import datetime  # noqa: PLC0415
+                job.completed_at = datetime.utcnow()
                 await session.commit()
 
         await publish_progress("system", 1.0, {"status": "complete"})
@@ -159,9 +164,7 @@ async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> 
 def ingest_brand_assets_task(
     self, brand_id: str, s3_keys: list[str]
 ) -> dict[str, Any]:
-    return asyncio.get_event_loop().run_until_complete(
-        _ingest_assets_async(brand_id, s3_keys)
-    )
+    return asyncio.run(_ingest_assets_async(brand_id, s3_keys))
 
 
 async def _ingest_assets_async(brand_id: str, s3_keys: list[str]) -> dict[str, Any]:
@@ -194,7 +197,7 @@ def run_inpaint_task(
     Preserves the rest of the composition — only the masked region is repainted.
     Result URL is stored in Redis under key inpaint:{task_id}.
     """
-    return asyncio.get_event_loop().run_until_complete(
+    return asyncio.run(
         _run_inpaint_async(self, task_id, gen_task_dict, image_url, mask_url)
     )
 
