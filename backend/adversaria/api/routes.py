@@ -11,6 +11,10 @@ Endpoints:
   POST   /v1/jobs/{id}/inpaint         — localized regeneration (mask one element)
   GET    /v1/jobs/{id}/stream          — SSE real-time progress stream
   GET    /v1/brands/{id}/eval-history  — eval history for dashboard
+
+Security:
+  - JWT Bearer enforced on every route via get_current_user dependency
+  - Rate limiting via slowapi: 10 req/min on generation, 60/min on reads
 """
 from __future__ import annotations
 
@@ -22,6 +26,10 @@ from typing import Any, AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -45,22 +53,30 @@ from adversaria.services.generation_router import get_generation_router, PLATFOR
 _settings = get_settings()
 router = APIRouter(prefix="/v1")
 
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
+# ── Auth ───────────────────────────────────────────────────────────────────────
+_bearer = HTTPBearer()
 
-security = HTTPBearer()
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+) -> str:
+    """Decode and validate JWT. Raises 401 on any failure."""
     try:
-        payload = jwt.decode(credentials.credentials, _settings.jwt_secret, algorithms=[_settings.jwt_algorithm])
-        user = payload.get("sub")
-        if user is None:
-            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-        return user
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid auth credentials")
+        payload = jwt.decode(
+            credentials.credentials,
+            _settings.jwt_secret,
+            algorithms=[_settings.jwt_algorithm],
+        )
+        sub = payload.get("sub")
+        if sub is None:
+            raise HTTPException(status_code=401, detail="Token missing 'sub' claim")
+        return sub
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {exc}") from exc
 
 
+# ── Rate limiter ───────────────────────────────────────────────────────────────
+limiter = Limiter(key_func=get_remote_address)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -68,11 +84,13 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/brands", status_code=201)
+@limiter.limit("20/minute")
 async def create_brand(
+    request: Request,
     name: str = Form(...),
     description: str = Form(""),
     db: AsyncSession = Depends(get_db),
-    user: str = Depends(get_current_user),
+    _user: str = Depends(get_current_user),
 ) -> dict[str, str]:
     existing = await db.execute(select(Brand).where(Brand.name == name))
     if existing.scalar_one_or_none():
@@ -90,11 +108,13 @@ async def create_brand(
 
 
 @router.post("/brands/{brand_id}/assets", status_code=201)
+@limiter.limit("10/minute")
 async def upload_brand_assets(
+    request: Request,
     brand_id: str,
     files: list[UploadFile] = File(...),
     db: AsyncSession = Depends(get_db),
-    user: str = Depends(get_current_user),
+    _user: str = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Upload brand assets to S3 and queue ingestion."""
     import boto3  # noqa: PLC0415
@@ -202,9 +222,12 @@ async def submit_brief(
 
 
 @router.get("/jobs/{job_id}", response_model=JobStatusResponse)
+@limiter.limit("60/minute")
 async def get_job_status(
+    request: Request,
     job_id: str,
     db: AsyncSession = Depends(get_db),
+    _user: str = Depends(get_current_user),
 ) -> JobStatusResponse:
     job = await db.get(DesignJob, job_id)
     if not job:
@@ -224,10 +247,13 @@ async def get_job_status(
 
 
 @router.post("/jobs/{job_id}/approve")
+@limiter.limit("30/minute")
 async def approve_or_reject_job(
+    request: Request,
     job_id: str,
     req: HumanFeedbackRequest,
     db: AsyncSession = Depends(get_db),
+    _user: str = Depends(get_current_user),
 ) -> dict[str, str]:
     """
     HITL: human approves or rejects a concept.
@@ -280,10 +306,13 @@ async def approve_or_reject_job(
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/jobs/{job_id}/taste-signal")
+@limiter.limit("30/minute")
 async def record_taste_signal(
+    request: Request,
     job_id: str,
     req: TasteSignalRequest,
     db: AsyncSession = Depends(get_db),
+    _user: str = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
     Records a performance signal (CTR, engagement, or manual +1/-1)
@@ -351,7 +380,12 @@ async def record_taste_signal(
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/jobs/{job_id}/stream")
-async def stream_job_progress(job_id: str) -> StreamingResponse:
+@limiter.limit("20/minute")
+async def stream_job_progress(
+    request: Request,
+    job_id: str,
+    _user: str = Depends(get_current_user),
+) -> StreamingResponse:
     """
     Server-Sent Events endpoint — frontend subscribes here for real-time
     pipeline progress without polling.
@@ -398,10 +432,13 @@ async def stream_job_progress(job_id: str) -> StreamingResponse:
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/brands/{brand_id}/eval-history")
+@limiter.limit("30/minute")
 async def get_eval_history(
+    request: Request,
     brand_id: str,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
+    _user: str = Depends(get_current_user),
 ) -> list[dict[str, Any]]:
     result = await db.execute(
         select(DesignJob)
@@ -456,10 +493,13 @@ class InpaintRequest(BaseModel):
 
 
 @router.post("/jobs/{job_id}/inpaint", status_code=202)
+@limiter.limit("5/minute")   # Inpainting is the most expensive endpoint
 async def localized_inpaint(
+    request: Request,
     job_id: str,
     req: InpaintRequest,
     db: AsyncSession = Depends(get_db),
+    _user: str = Depends(get_current_user),
 ) -> dict[str, Any]:
     """
     Localized regeneration: nudge a single element in a generated concept
