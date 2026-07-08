@@ -59,6 +59,7 @@ dependencies = [
     "structlog>=24.4.0",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
+    "slowapi>=0.1.9",              # Rate limiting
     "boto3>=1.35.0",          # S3 / MinIO
     "python-dotenv>=1.0.0",
     "numpy>=1.26.0",
