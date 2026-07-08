@@ -98,11 +98,30 @@ Schema:
 }"""
 
 
+
+from pydantic import BaseModel
+from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import SystemMessage, HumanMessage
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+class DirectorOutput(BaseModel):
+    creative_strategy: str
+    spawned_agents: list[str]
+    market_signal_hypothesis: str
+    key_constraints: list[str]
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 async def creative_director_node(state: DesignState) -> dict[str, Any]:
     """Director analyzes brief, spawns sub-agents, produces creative strategy."""
-    client = AsyncAnthropic(api_key=_settings.anthropic_api_key)
+    llm = ChatAnthropic(
+        model=_settings.director_model, 
+        api_key=_settings.anthropic_api_key,
+        max_tokens=1024
+    )
+    structured_llm = llm.with_structured_output(DirectorOutput)
 
-    rules_summary = "\n".join(
+    rules_summary = "
+".join(
         f"[{r['rule_type']}] {r['rule_text']}" for r in state.brand_rules[:8]
     )
 
@@ -117,25 +136,15 @@ Brand Rules Retrieved:
 
 Produce the creative strategy JSON."""
 
-    response = await client.messages.create(
-        model=_settings.director_model,
-        max_tokens=1024,
-        system=DIRECTOR_SYSTEM,
-        messages=[{"role": "user", "content": user_msg}],
-    )
-
-    raw = response.content[0].text.strip()
-    # Strip markdown code fences if present
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    data = json.loads(raw)
+    result = await structured_llm.ainvoke([
+        SystemMessage(content=DIRECTOR_SYSTEM),
+        HumanMessage(content=user_msg)
+    ])
 
     return {
-        "creative_strategy": data.get("creative_strategy", state.brief),
-        "spawned_agents": data.get("spawned_agents", []),
-        "market_signal_hypothesis": data.get("market_signal_hypothesis", ""),
+        "creative_strategy": result.creative_strategy,
+        "spawned_agents": result.spawned_agents,
+        "market_signal_hypothesis": result.market_signal_hypothesis,
     }
 
 
