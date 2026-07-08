@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     app_env: Literal["development", "staging", "production"] = "development"
     app_secret_key: str = "change-me"
     log_level: str = "INFO"
+    jwt_secret: str = "change-me"
+    jwt_algorithm: str = "HS256"
 
     # ── Anthropic / Claude ────────────────────────────────────────────────────
     anthropic_api_key: str
