@@ -11,9 +11,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adversaria.config import get_settings
-from adversaria.api.routes import router
+from adversaria.api.routes import router, limiter
 from adversaria.db.session import create_tables
 from adversaria.services.vector_store import get_vector_store
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 _settings = get_settings()
 log = structlog.get_logger()
@@ -46,6 +48,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Attach rate limiter state and exception handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
