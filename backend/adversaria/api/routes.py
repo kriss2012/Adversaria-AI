@@ -45,6 +45,23 @@ from adversaria.services.generation_router import get_generation_router, PLATFOR
 _settings = get_settings()
 router = APIRouter(prefix="/v1")
 
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    try:
+        payload = jwt.decode(credentials.credentials, _settings.jwt_secret, algorithms=[_settings.jwt_algorithm])
+        user = payload.get("sub")
+        if user is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid auth credentials")
+
+
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Brand management
@@ -55,6 +72,7 @@ async def create_brand(
     name: str = Form(...),
     description: str = Form(""),
     db: AsyncSession = Depends(get_db),
+    user: str = Depends(get_current_user),
 ) -> dict[str, str]:
     existing = await db.execute(select(Brand).where(Brand.name == name))
     if existing.scalar_one_or_none():
@@ -76,6 +94,7 @@ async def upload_brand_assets(
     brand_id: str,
     files: list[UploadFile] = File(...),
     db: AsyncSession = Depends(get_db),
+    user: str = Depends(get_current_user),
 ) -> dict[str, Any]:
     """Upload brand assets to S3 and queue ingestion."""
     import boto3  # noqa: PLC0415
@@ -132,6 +151,7 @@ async def upload_brand_assets(
 async def submit_brief(
     req: BriefRequest,
     db: AsyncSession = Depends(get_db),
+    user: str = Depends(get_current_user),
 ) -> dict[str, str]:
     """Submit a creative brief — creates a job and queues the pipeline."""
     brand = await db.get(Brand, req.brand_id)
