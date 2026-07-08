@@ -1,4 +1,4 @@
-import type { AgentLog, DebateRound, CriticVote, EvalScores, HistoricalEntry, RationaleTrace, BriefData } from './types';
+import type { AgentLog, DebateRound, EvalScores, HistoricalEntry, RationaleTrace, BriefData } from './types';
 
 // ─── STEP TYPES ──────────────────────────────────────────────────────────────
 export interface SimStep {
@@ -56,7 +56,7 @@ export async function runAgentSimulation(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         brand_id: brandId,
-        brief: brief.brief,
+        brief: brief.prompt,
         platform: brief.platform,
         tone: brief.tone,
         uploaded_asset_keys: []
@@ -79,7 +79,7 @@ export async function runAgentSimulation(
   }
 
   // 3. Connect to SSE Stream
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const eventSource = new EventSource(`${API_BASE}/jobs/${jobId}/stream`);
 
     eventSource.onmessage = (event) => {
