@@ -55,7 +55,7 @@ class VectorStore:
             (MOODBOARDS_COLLECTION, IMAGE_EMBEDDING_DIM, Distance.COSINE),
             (CONCEPT_HISTORY_COLLECTION, TEXT_EMBEDDING_DIM, Distance.COSINE),
         ]
-        existing = {c.name for c in await self.client.get_collections()}
+        existing = {c.name for c in (await self.client.get_collections()).collections}
         for name, dim, distance in specs:
             if name not in existing:
                 await self.client.create_collection(
