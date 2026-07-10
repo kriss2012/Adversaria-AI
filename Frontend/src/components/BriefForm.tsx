@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileText, Info, Sparkles, X } from 'lucide-react';
+import { UploadCloud, FileText, Info, Sparkles, X, Play } from 'lucide-react';
 import type { BriefData } from '../types';
 
 interface BriefFormProps {
@@ -255,12 +255,3 @@ export const BriefForm: React.FC<BriefFormProps> = ({ onSubmit, isGenerating }) 
     </form>
   );
 };
-
-// local Play icon (avoid extra import warning)
-function Play({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  );
-}
