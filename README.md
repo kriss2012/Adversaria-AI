@@ -470,4 +470,4 @@ Your support helps improve Adversaria AI and encourages future development.
 **Adversaria AI** is built to make that future a reality.
 
 
-**Love By KiriGen Tech**
+**Love By KiriGen By💕**
