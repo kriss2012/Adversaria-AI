@@ -109,3 +109,5 @@ Run: `cd backend && pytest tests/ -v`
 1. **XGBoost performance model**: Falls back to the calibrated heuristic until 50+ feedback entries exist to train on.
 2. **LangSmith tracing**: `LANGCHAIN_API_KEY` must be set for distributed trace correlation across nodes.
 3. **Alembic migrations**: `create_tables()` is used in development; production deployments need `alembic upgrade head`.
+
+**Love By KiriGen By💕**
