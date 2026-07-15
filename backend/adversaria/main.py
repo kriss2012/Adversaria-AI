@@ -3,6 +3,7 @@ adversaria/main.py — FastAPI application entrypoint.
 """
 from __future__ import annotations
 
+import asyncio
 import structlog
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -30,9 +31,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if _settings.app_env == "development":
         await create_tables()
 
-    # Bootstrap Qdrant collections
+    # Bootstrap Qdrant collections in the background so it doesn't block startup
     vs = get_vector_store()
-    await vs.ensure_collections()
+    asyncio.create_task(vs.ensure_collections())
 
     log.info("adversaria.ready")
     yield
