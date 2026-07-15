@@ -205,9 +205,9 @@ export const AgentVisualizer: React.FC<AgentVisualizerProps> = ({
           </div>
         ) : (
           logs.map((log, index) => {
-            let agentColor = '#a78bfa';
+            let agentColor = '#f472b6';
             if (log.agentName.includes('Purist'))   agentColor = '#f59e0b';
-            if (log.agentName.includes('Marketer'))  agentColor = '#a78bfa';
+            if (log.agentName.includes('Marketer'))  agentColor = '#f472b6';
             if (log.agentName.includes('Novelty'))   agentColor = '#06b6d4';
             if (log.agentName.includes('Director'))  agentColor = '#c084fc';
             if (log.agentName === 'System')          agentColor = '#10b981';
