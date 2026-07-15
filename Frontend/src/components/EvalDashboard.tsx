@@ -126,9 +126,9 @@ export const EvalDashboard: React.FC<EvalDashboardProps> = ({ currentScores, his
             <AxisBar
               label="Brand Fit"
               score={currentScores.brandFit}
-              color="#a78bfa"
+              color="#f472b6"
               reason={currentScores.breakdown.brandFitReason}
-              icon={<Star size={13} style={{ color: '#a78bfa' }} />}
+              icon={<Star size={13} style={{ color: '#f472b6' }} />}
             />
             <AxisBar
               label="Novelty"
@@ -148,7 +148,7 @@ export const EvalDashboard: React.FC<EvalDashboardProps> = ({ currentScores, his
             {/* Axis legend */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
               {[
-                { label: 'Brand Fit',   desc: 'Embedding similarity to brand corpus & style guide compliance', color: '#a78bfa' },
+                { label: 'Brand Fit',   desc: 'Embedding similarity to brand corpus & style guide compliance', color: '#f472b6' },
                 { label: 'Novelty',     desc: 'Cosine distance from prior outputs in concept embedding space', color: '#06b6d4' },
                 { label: 'Pred. Perf.', desc: 'Regression model trained on historical ad CTR data',            color: '#10b981' },
               ].map(axis => (
@@ -199,7 +199,7 @@ export const EvalDashboard: React.FC<EvalDashboardProps> = ({ currentScores, his
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                     <div style={{ display: 'flex', gap: '5px' }}>
                       {[
-                        { score: entry.scores.brandFit,              color: '#a78bfa' },
+                        { score: entry.scores.brandFit,              color: '#f472b6' },
                         { score: entry.scores.novelty,               color: '#06b6d4' },
                         { score: entry.scores.predictedPerformance,  color: '#10b981' },
                       ].map((s, i) => (
