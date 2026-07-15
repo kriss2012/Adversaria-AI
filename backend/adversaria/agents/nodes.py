@@ -204,6 +204,11 @@ async def senior_designer_node(state: DesignState) -> dict[str, Any]:
     rules_summary = "\n".join(
         f"[{r['rule_type']}] {r['rule_text']}" for r in state.brand_rules[:6]
     )
+    moodboard_summary = ""
+    if getattr(state, "moodboard_descriptions", None):
+        moodboard_summary = "\nVisual reference/moodboard styles:\n" + "\n".join(
+            f"- {desc}" for desc in state.moodboard_descriptions
+        )
     prior_critique = (
         state.critique_log[-1]["director_synthesis"]
         if state.critique_log else "First iteration — no prior critique."
@@ -212,7 +217,8 @@ async def senior_designer_node(state: DesignState) -> dict[str, Any]:
         f"Creative Strategy: {state.creative_strategy}\n"
         f"Platform: {state.platform.value} ({specs['width']}x{specs['height']}px)\n"
         f"Tone: {state.tone.value}\n"
-        f"Brand Rules:\n{rules_summary}\n\n"
+        f"Brand Rules:\n{rules_summary}\n"
+        f"{moodboard_summary}\n"
         f"Prior critique: {prior_critique}\n\n"
         "Produce the layout specification."
     )
