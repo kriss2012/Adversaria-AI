@@ -204,6 +204,7 @@ class DesignState(BaseModel):
     # ── Retrieved context ─────────────────────────────────────────────────────
     brand_rules: list[BrandRule] = Field(default_factory=list)
     moodboard_ids: list[str] = Field(default_factory=list)
+    moodboard_descriptions: list[str] = Field(default_factory=list)
 
     # ── Director output ───────────────────────────────────────────────────────
     creative_strategy: str = ""          # Director's enriched brief
