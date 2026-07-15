@@ -20,9 +20,9 @@ const criticMeta = {
   },
   marketer: {
     label:       'Performance-Marketer Critic',
-    color:       '#a78bfa',
-    bgColor:     'rgba(167, 139, 250, 0.06)',
-    borderColor: 'rgba(167, 139, 250, 0.2)',
+    color:       '#f472b6',
+    bgColor:     'rgba(244, 114, 182, 0.06)',
+    borderColor: 'rgba(244, 114, 182, 0.2)',
     icon:        TrendingUp,
     tagline:     'CTR, conversion & call-to-action optimization',
   },
@@ -221,8 +221,8 @@ export const DebatePanel: React.FC<DebatePanelProps> = ({ round }) => {
 
       {/* Director Synthesis */}
       <div style={{
-        background:   'rgba(124, 58, 237, 0.06)',
-        border:       '1px solid rgba(124, 58, 237, 0.2)',
+        background:   'rgba(236, 72, 153, 0.06)',
+        border:       '1px solid rgba(236, 72, 153, 0.2)',
         borderRadius: 'var(--radius-md)',
         padding:      '14px',
       }}>
