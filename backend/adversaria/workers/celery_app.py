@@ -61,14 +61,12 @@ async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> 
     from adversaria.db.session import AsyncSessionLocal  # noqa: PLC0415
     from adversaria.db.models import DesignJob  # noqa: PLC0415
     from sqlalchemy import select  # noqa: PLC0415
-    import redis.asyncio as aioredis  # noqa: PLC0415
-
-    redis_client = aioredis.from_url(_settings.redis_url)
+    from adversaria.services.pubsub import publish_message  # noqa: PLC0415
 
     async def publish_progress(agent: str, pct: float, extra: dict | None = None) -> None:
-        """Publish real-time progress to Redis pub/sub channel."""
-        payload = json.dumps({"job_id": job_id, "agent": agent, "pct": pct, **(extra or {})})
-        await redis_client.publish(f"job:{job_id}", payload)
+        """Publish real-time progress to the pub/sub channel."""
+        payload = {"job_id": job_id, "agent": agent, "pct": pct, **(extra or {})}
+        await publish_message(f"job:{job_id}", payload)
 
     try:
         await publish_progress("system", 0.05, {"status": "starting"})
@@ -129,14 +127,12 @@ async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> 
                 await session.commit()
 
         await publish_progress("system", 1.0, {"status": "complete"})
-        await redis_client.aclose()
 
         return {"job_id": job_id, "status": "complete"}
 
     except Exception as exc:
         logger.exception("Pipeline failed for job %s", job_id)
         await publish_progress("system", -1, {"status": "error", "error": str(exc)})
-        await redis_client.aclose()
 
         # Update job status in DB
         from adversaria.db.session import AsyncSessionLocal as Session  # noqa: PLC0415
@@ -150,7 +146,9 @@ async def _run_pipeline_async(task, job_id: str, state_dict: dict[str, Any]) -> 
                 job.error_message = str(exc)
                 await session.commit()
 
-        raise task.retry(exc=exc, countdown=30) from exc
+        if task:
+            raise task.retry(exc=exc, countdown=30) from exc
+        raise exc
 
 
 # ─── Task: brand ingestion ────────────────────────────────────────────────────
@@ -211,15 +209,13 @@ async def _run_inpaint_async(
 ) -> dict[str, Any]:
     from adversaria.schemas import GenTask  # noqa: PLC0415
     from adversaria.services.generation_router import get_generation_router  # noqa: PLC0415
-    import redis.asyncio as aioredis  # noqa: PLC0415
-
-    redis_client = aioredis.from_url(_settings.redis_url)
+    from adversaria.services.pubsub import publish_message, set_cache  # noqa: PLC0415
 
     async def publish(status: str, extra: dict | None = None) -> None:
-        payload = json.dumps({"task_id": task_id, "status": status, **(extra or {})})
-        await redis_client.publish(f"job:{task_id}", payload)
+        payload = {"task_id": task_id, "status": status, **(extra or {})}
+        await publish_message(f"job:{task_id}", payload)
         # Also set a key so polling clients can check
-        await redis_client.setex(f"inpaint:{task_id}", 3600, payload)
+        await set_cache(f"inpaint:{task_id}", payload, expire=3600)
 
     try:
         await publish("starting")
@@ -227,12 +223,12 @@ async def _run_inpaint_async(
         router = get_generation_router()
         output_url = await router.generate_inpaint(gen_task, image_url, mask_url)
         await publish("complete", {"generated_image_url": output_url})
-        await redis_client.aclose()
         return {"task_id": task_id, "status": "complete", "generated_image_url": output_url}
 
     except Exception as exc:
         logger.exception("Inpaint task failed for %s", task_id)
         await publish("error", {"error": str(exc)})
-        await redis_client.aclose()
-        raise task.retry(exc=exc, countdown=15) from exc
+        if task:
+            raise task.retry(exc=exc, countdown=15) from exc
+        raise exc
 
