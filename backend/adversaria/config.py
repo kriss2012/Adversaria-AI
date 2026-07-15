@@ -53,12 +53,16 @@ class Settings(BaseSettings):
     qdrant_brand_rules_collection: str = "brand_rules"
     qdrant_moodboards_collection: str = "moodboards"
 
+    # ── Hugging Face ──────────────────────────────────────────────────────────
+    hf_api_key: str = ""
+
     # ── Postgres ──────────────────────────────────────────────────────────────
     database_url: str = "postgresql+asyncpg://adversaria:adversaria@localhost:5432/adversaria_db"
     database_pool_size: int = 10
     database_max_overflow: int = 20
 
-    # ── Redis ─────────────────────────────────────────────────────────────────
+    # ── Redis / Celery ────────────────────────────────────────────────────────
+    celery_enabled: bool = False
     redis_url: str = "redis://localhost:6379/0"
     celery_broker_url: str = "redis://localhost:6379/1"
     celery_result_backend: str = "redis://localhost:6379/2"
