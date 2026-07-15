@@ -127,10 +127,12 @@ async def retrieve_brand_context_node(state: DesignState) -> dict[str, Any]:
         top_k=5,
     )
     moodboard_ids = [m["id"] for m in moodboard_hits]
+    moodboard_descriptions = [m["description"] for m in moodboard_hits if m.get("description")]
 
     return {
         "brand_rules": [r.model_dump() for r in brand_rules],
         "moodboard_ids": moodboard_ids,
+        "moodboard_descriptions": moodboard_descriptions,
     }
 
 
