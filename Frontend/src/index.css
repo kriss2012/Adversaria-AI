@@ -2,35 +2,36 @@
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────────────────────────── */
 :root {
-  /* Brand palette */
-  --color-primary:        #7c3aed;   /* violet-600 */
-  --color-primary-light:  #a78bfa;   /* violet-400 */
-  --color-primary-dim:    rgba(124, 58, 237, 0.15);
-  --color-secondary:      #06b6d4;   /* cyan-500 */
-  --color-secondary-dim:  rgba(6, 182, 212, 0.12);
-  --color-accent:         #f59e0b;   /* amber-500 */
+  /* Brand palette — rose/pink primary, kept for gradients + interactive states */
+  --color-primary:        #ec4899;   /* pink-500 */
+  --color-primary-light:  #f472b6;   /* pink-400 */
+  --color-primary-dark:   #db2777;   /* pink-600, gradient stop */
+  --color-primary-dim:    rgba(236, 72, 153, 0.12);
+  --color-secondary:      #fb7185;   /* rose-400, secondary gradient stop */
+  --color-secondary-dim:  rgba(251, 113, 133, 0.10);
+  --color-accent:         #f59e0b;   /* amber-500, unchanged — semantic warning color */
   --color-accent-dim:     rgba(245, 158, 11, 0.12);
-  --color-success:        #10b981;
-  --color-danger:         #ef4444;
+  --color-success:        #10b981;   /* unchanged — semantic success color */
+  --color-danger:         #ef4444;   /* unchanged — semantic danger color */
 
-  /* Backgrounds */
-  --bg-base:      #050508;
-  --bg-surface:   rgba(19, 20, 27, 0.65);
-  --bg-elevated:  rgba(26, 28, 38, 0.75);
-  --bg-card:      rgba(30, 32, 48, 0.6);
-  --bg-input:     rgba(37, 40, 64, 0.5);
-  --bg-hover:     rgba(255, 255, 255, 0.08);
+  /* Backgrounds — ~70% white / ~30% light pink, layered via tinted surfaces */
+  --bg-base:      #fffbfc;                        /* near-white, faint pink cast */
+  --bg-surface:   rgba(255, 255, 255, 0.72);       /* glass surface over base */
+  --bg-elevated:  rgba(253, 234, 242, 0.85);       /* light pink elevated panels */
+  --bg-card:      rgba(255, 255, 255, 0.88);       /* white cards */
+  --bg-input:     rgba(253, 242, 247, 0.7);        /* soft pink input fields */
+  --bg-hover:     rgba(236, 72, 153, 0.06);
 
   /* Borders */
-  --border-light:  rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-focus:  rgba(124, 58, 237, 0.6);
+  --border-light:  rgba(236, 72, 153, 0.10);
+  --border-medium: rgba(236, 72, 153, 0.18);
+  --border-focus:  rgba(236, 72, 153, 0.55);
 
-  /* Text */
-  --text-main:    #e8eaf0;
-  --text-sub:     #a0a6ba;
-  --text-muted:   #6b7294;
-  --text-dark:    #3d4266;
+  /* Text — dark plum for AA contrast on white/pink */
+  --text-main:    #2b1c2b;
+  --text-sub:     #6e5468;
+  --text-muted:   #9c839a;
+  --text-dark:    #c9b3c6;
 
   /* Typography */
   --font-sans:  'Outfit', 'Space Grotesk', system-ui, sans-serif;
@@ -44,11 +45,11 @@
   --radius-lg:  14px;
   --radius-xl:  20px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 20px rgba(124, 58, 237, 0.25);
+  /* Shadows — soft pink-tinted, not black, for a light SaaS look */
+  --shadow-sm: 0 1px 3px rgba(219, 39, 119, 0.06);
+  --shadow-md: 0 4px 16px rgba(219, 39, 119, 0.10);
+  --shadow-lg: 0 12px 36px rgba(219, 39, 119, 0.14);
+  --shadow-glow: 0 0 20px rgba(236, 72, 153, 0.30);
 }
 
 /* ─── RESET ──────────────────────────────────────────────────────────────────── */
@@ -78,8 +79,9 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.08), transparent 25%),
-              radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.08), transparent 25%),
+  background: radial-gradient(circle at 15% 50%, rgba(236, 72, 153, 0.07), transparent 30%),
+              radial-gradient(circle at 85% 20%, rgba(251, 113, 133, 0.07), transparent 30%),
+              radial-gradient(circle at 50% 100%, rgba(244, 114, 182, 0.05), transparent 35%),
               var(--bg-base);
   position: relative;
 }
@@ -87,7 +89,7 @@ body {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 0;
 }
@@ -432,7 +434,8 @@ body {
 
 .voyage-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(236, 72, 153, 0.28);
+  transform: translateY(-2px);
 }
 
 .voyage-card-header {
@@ -497,7 +500,7 @@ select.voyage-input option { background: var(--bg-elevated); }
 
 /* ─── BUTTONS ────────────────────────────────────────────────────────────────── */
 .voyage-button {
-  background: linear-gradient(135deg, var(--color-primary), #6d28d9);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: white;
   border: none;
   border-radius: var(--radius-sm);
@@ -511,14 +514,14 @@ select.voyage-input option { background: var(--bg-elevated); }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 2px 10px rgba(219, 39, 119, 0.28);
   letter-spacing: 0.01em;
 }
 
 .voyage-button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
-  background: linear-gradient(135deg, #8b5cf6, var(--color-primary));
+  box-shadow: 0 6px 18px rgba(219, 39, 119, 0.38);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
 }
 
 .voyage-button:active:not(:disabled) { transform: translateY(0); }
@@ -708,10 +711,10 @@ select.voyage-input option { background: var(--bg-elevated); }
 .login-page::before {
   content: '';
   position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
-  top: -200px;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.14) 0%, transparent 70%);
+  top: -220px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
@@ -751,4 +754,45 @@ select.voyage-input option { background: var(--bg-elevated); }
 
 @media (max-width: 768px) {
   .sidebar-overlay.visible { display: block; }
+}
+
+/* ─── RESPONSIVE LAYER ───────────────────────────────────────────────────────── */
+
+/* Tablet / small laptop */
+@media (max-width: 1024px) {
+  :root { --sidebar-width: 210px; }
+  .voyage-content { padding: 24px 20px; }
+  .voyage-page-title { font-size: 20px; }
+}
+
+/* Large phones / small tablets — sidebar becomes an off-canvas drawer */
+@media (max-width: 768px) {
+  .voyage-header { padding: 0 14px; }
+  .header-breadcrumb { font-size: 12.5px; }
+  .voyage-card { padding: 16px; }
+  .login-card { padding: 32px 24px; }
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .voyage-button { width: 100%; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .voyage-content { padding: 16px 12px; }
+  .voyage-header { height: 54px; padding: 0 12px; gap: 8px; }
+  .voyage-page-title { font-size: 18px; }
+  .voyage-page-subtitle { font-size: 12.5px; }
+  .header-breadcrumb strong { display: none; } /* keep breadcrumb compact on tiny screens */
+  .voyage-card { padding: 14px; border-radius: var(--radius-md); }
+  .login-card { padding: 26px 18px; border-radius: var(--radius-lg); }
+  .sidebar-header { padding: 16px 12px 12px; }
+  .voyage-input, .voyage-button { padding: 11px 14px; } /* larger tap target on touch */
+  .tab-btn { padding: 10px 12px; font-size: 12.5px; }
+}
+
+/* Ultra-wide screens — cap content width so text doesn't stretch edge-to-edge */
+@media (min-width: 1600px) {
+  .voyage-content { max-width: 1440px; margin: 0 auto; }
 }
