@@ -157,11 +157,11 @@ async def upload_brand_assets(
 
     await db.flush()
 
-    # Queue ingestion task
-    from adversaria.workers.celery_app import ingest_brand_assets_task  # noqa: PLC0415
-    task = ingest_brand_assets_task.delay(brand_id, uploaded_keys)
+    # Queue ingestion task using unified task dispatcher
+    from adversaria.services.tasks import dispatch_ingest_brand_assets  # noqa: PLC0415
+    task_id = dispatch_ingest_brand_assets(brand_id, uploaded_keys)
 
-    return {"brand_id": brand_id, "uploaded": len(uploaded_keys), "task_id": task.id}
+    return {"brand_id": brand_id, "uploaded": len(uploaded_keys), "task_id": task_id}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -212,12 +212,9 @@ async def submit_brief(
     db.add(job)
     await db.flush()
 
-    # Queue pipeline
-    from adversaria.workers.celery_app import run_pipeline_task  # noqa: PLC0415
-    run_pipeline_task.apply_async(
-        args=[job_id, initial_state.model_dump(mode="json")],
-        task_id=job_id,
-    )
+    # Queue pipeline using unified task dispatcher
+    from adversaria.services.tasks import dispatch_run_pipeline  # noqa: PLC0415
+    dispatch_run_pipeline(job_id, initial_state.model_dump(mode="json"))
 
     return {"job_id": job_id, "status": "queued"}
 
@@ -230,6 +227,19 @@ async def get_job_status(
     db: AsyncSession = Depends(get_db),
     _user: str = Depends(get_current_user),
 ) -> JobStatusResponse:
+    # Check inpaint task cache first
+    from adversaria.services.pubsub import get_cache  # noqa: PLC0415
+    inpaint_data = await get_cache(f"inpaint:{job_id}")
+    if inpaint_data:
+        return JobStatusResponse(
+            job_id=job_id,
+            status=inpaint_data.get("status", "queued"),
+            current_agent="inpaint",
+            spawned_agents=[],
+            generated_image_url=inpaint_data.get("generated_image_url"),
+            error=inpaint_data.get("error"),
+        )
+
     job = await db.get(DesignJob, job_id)
     if not job:
         raise HTTPException(404, "Job not found")
@@ -284,8 +294,8 @@ async def approve_or_reject_job(
     db.add(fb)
     await db.flush()
 
-    # Resume pipeline (re-queue with updated state)
-    from adversaria.workers.celery_app import run_pipeline_task  # noqa: PLC0415
+    # Resume pipeline using unified task dispatcher (re-queue with updated state)
+    from adversaria.services.tasks import dispatch_run_pipeline  # noqa: PLC0415
     updated_state = {
         "brand_id": job.brand_id,
         "job_id": job_id,
@@ -297,7 +307,7 @@ async def approve_or_reject_job(
         "human_feedback": req.feedback,
         "status": "approved" if req.approved else "iterated",
     }
-    run_pipeline_task.apply_async(args=[job_id, updated_state])
+    dispatch_run_pipeline(job_id, updated_state)
 
     return {"job_id": job_id, "status": "resumed", "approved": str(req.approved)}
 
@@ -394,29 +404,24 @@ async def stream_job_progress(
     import redis.asyncio as aioredis  # noqa: PLC0415
 
     async def event_generator() -> AsyncGenerator[str, None]:
-        redis_client = aioredis.from_url(_settings.redis_url)
-        pubsub = redis_client.pubsub()
-        await pubsub.subscribe(f"job:{job_id}")
-
+        from adversaria.services.pubsub import subscribe_channel  # noqa: PLC0415
         try:
             # Send initial connection event
             yield f"data: {json.dumps({'event': 'connected', 'job_id': job_id})}\n\n"
 
             timeout = 600  # 10 minutes max
             elapsed = 0
-            async for message in pubsub.listen():
-                if message["type"] == "message":
-                    yield f"data: {message['data'].decode()}\n\n"
-                    data = json.loads(message["data"])
-                    if data.get("status") in {"complete", "error"}:
-                        break
+            async for message in subscribe_channel(f"job:{job_id}"):
+                yield f"data: {message}\n\n"
+                data = json.loads(message)
+                if data.get("status") in {"complete", "error"}:
+                    break
                 await asyncio.sleep(0.1)
                 elapsed += 0.1
                 if elapsed > timeout:
                     break
-        finally:
-            await pubsub.unsubscribe(f"job:{job_id}")
-            await redis_client.aclose()
+        except Exception:
+            pass
 
     return StreamingResponse(
         event_generator(),
@@ -543,14 +548,12 @@ async def localized_inpaint(
     )
 
     inpaint_task_id = str(uuid.uuid4())
-    run_inpaint_task.apply_async(
-        args=[
-            inpaint_task_id,
-            gen_task.model_dump(mode="json"),
-            req.image_url,
-            req.mask_url,
-        ],
-        task_id=inpaint_task_id,
+    from adversaria.services.tasks import dispatch_run_inpaint  # noqa: PLC0415
+    dispatch_run_inpaint(
+        inpaint_task_id,
+        gen_task.model_dump(mode="json"),
+        req.image_url,
+        req.mask_url,
     )
 
     return {
