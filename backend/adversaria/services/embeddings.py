@@ -88,11 +88,38 @@ class EmbeddingService:
     async def embed_image_file(self, image_path: Path) -> list[float]:
         """
         Generate CLIP embedding for an image file.
-        Uses transformers CLIP locally (no external API needed).
+        First tries Hugging Face Inference API to avoid loading heavy local PyTorch/transformers,
+        then falls back to local transformers execution, and finally uses a mock.
         """
+        if _settings.hf_api_key:
+            hf_emb = await self._clip_embed_hf(image_path, _settings.hf_api_key)
+            if hf_emb:
+                return hf_emb
+
         return await asyncio.get_event_loop().run_in_executor(
             None, self._clip_embed_sync, image_path
         )
+
+    async def _clip_embed_hf(self, image_path: Path, api_key: str) -> list[float] | None:
+        """Call Hugging Face Inference API for CLIP embeddings (saves RAM and CPU)."""
+        url = "https://api-inference.huggingface.co/models/openai/clip-vit-large-patch14"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        try:
+            with open(image_path, "rb") as f:
+                image_bytes = f.read()
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.post(url, headers=headers, content=image_bytes)
+                if response.status_code == 200:
+                    res = response.json()
+                    # HF feature extraction returns a list of floats (or nested list)
+                    if isinstance(res, list) and len(res) > 0:
+                        if isinstance(res[0], float):
+                            return res
+                        elif isinstance(res[0], list) and all(isinstance(x, float) for x in res[0]):
+                            return res[0]
+        except Exception:
+            pass
+        return None
 
     def _clip_embed_sync(self, image_path: Path) -> list[float]:
         try:
@@ -100,7 +127,8 @@ class EmbeddingService:
             from transformers import CLIPModel, CLIPProcessor  # noqa: PLC0415
             import torch  # noqa: PLC0415
 
-            model_name = "openai/clip-vit-base-patch32"
+            # Use clip-vit-large-patch14 (768-dim) to align with Qdrant specs
+            model_name = "openai/clip-vit-large-patch14"
             processor = CLIPProcessor.from_pretrained(model_name)
             model = CLIPModel.from_pretrained(model_name)
             model.eval()
@@ -112,7 +140,7 @@ class EmbeddingService:
                 features = features / features.norm(dim=-1, keepdim=True)
             return features[0].tolist()
         except ImportError:
-            # Fallback: deterministic mock
+            # Fallback: deterministic mock (768-dim)
             return self._mock_embedding(str(image_path), dim=768)
 
     # ── Taste Vector Update ───────────────────────────────────────────────────
