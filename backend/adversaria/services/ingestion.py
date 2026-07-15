@@ -74,7 +74,8 @@ async def ingest_brand_assets(brand_id: str, s3_keys: list[str]) -> dict[str, An
                 rules = await _extract_pdf_rules(content, filename)
                 all_rules.extend(rules)
             elif ext in {".png", ".jpg", ".jpeg", ".webp"}:
-                await _ingest_image_asset(brand_id, s3_key, content, filename, vs, emb)
+                mime_type = "image/png" if ext == ".png" else "image/webp" if ext == ".webp" else "image/jpeg"
+                await _ingest_image_asset(brand_id, s3_key, content, filename, vs, emb, mime_type)
             elif ext == ".svg":
                 # SVGs are stored by reference; extract any embedded text
                 svg_text = content.decode("utf-8", errors="ignore")
@@ -169,6 +170,48 @@ async def _extract_text_rules(text: str, filename: str) -> list[dict[str, Any]]:
     return all_rules
 
 
+async def _describe_image_with_vision(content: bytes, mime_type: str) -> str:
+    """Use Claude Vision to describe the visual style and mood of the image."""
+    import base64  # noqa: PLC0415
+    try:
+        client = AsyncAnthropic(api_key=_settings.anthropic_api_key)
+        
+        # Normalize mime type for Anthropic's Messages API
+        if not mime_type or "/" not in mime_type:
+            mime_type = "image/jpeg"
+        elif mime_type == "image/jpg":
+            mime_type = "image/jpeg"
+            
+        base64_image = base64.b64encode(content).decode("utf-8")
+        
+        response = await client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=300,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": mime_type,
+                                "data": base64_image,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": "Describe the visual style, color palette, mood, composition, and artistic aesthetic of this moodboard reference image in 2-3 concise sentences. Focus on details relevant for directing a graphic designer or image generation model.",
+                        }
+                    ],
+                }
+            ],
+        )
+        return response.content[0].text.strip()
+    except Exception:
+        return ""
+
+
 async def _ingest_image_asset(
     brand_id: str,
     s3_key: str,
@@ -176,6 +219,7 @@ async def _ingest_image_asset(
     filename: str,
     vs,
     emb,
+    mime_type: str = "image/jpeg",
 ) -> None:
     """Save image to temp file, generate CLIP embedding, upsert to moodboards."""
     import uuid  # noqa: PLC0415
@@ -184,13 +228,20 @@ async def _ingest_image_asset(
         tmp_path = Path(tmp.name)
 
     try:
+        # Generate visual description using Claude Vision API
+        visual_description = await _describe_image_with_vision(content, mime_type)
+
         image_embedding = await emb.embed_image_file(tmp_path)
         asset_id = str(uuid.uuid4())
         await vs.upsert_moodboard(
             brand_id=brand_id,
             asset_id=asset_id,
             image_embedding=image_embedding,
-            metadata={"s3_key": s3_key, "filename": filename},
+            metadata={
+                "s3_key": s3_key,
+                "filename": filename,
+                "description": visual_description,
+            },
         )
     finally:
         tmp_path.unlink(missing_ok=True)
