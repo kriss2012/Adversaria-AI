@@ -155,13 +155,19 @@ async def creative_director_node(state: DesignState) -> dict[str, Any]:
     rules_summary = "\n".join(
         f"[{r['rule_type']}] {r['rule_text']}" for r in state.brand_rules[:8]
     )
+    moodboard_summary = ""
+    if getattr(state, "moodboard_descriptions", None):
+        moodboard_summary = "\nVisual reference/moodboard styles:\n" + "\n".join(
+            f"- {desc}" for desc in state.moodboard_descriptions
+        )
     user_msg = (
         f"Brief: {state.brief}\n"
         f"Platform: {state.platform.value}\n"
         f"Tone: {state.tone.value}\n"
         f"Iteration: {state.iteration}\n"
         f"Prior human feedback: {state.human_feedback or 'None'}\n\n"
-        f"Brand Rules:\n{rules_summary}\n\n"
+        f"Brand Rules:\n{rules_summary}\n"
+        f"{moodboard_summary}\n"
         "Produce the creative strategy."
     )
 
