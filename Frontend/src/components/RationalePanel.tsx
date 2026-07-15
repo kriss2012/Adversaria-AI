@@ -45,7 +45,7 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
       {/* Header */}
       <div>
         <h3 style={{ fontSize: '15px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)' }}>
-          <GitBranch size={16} style={{ color: '#a78bfa' }} />
+          <GitBranch size={16} style={{ color: 'var(--color-primary-light)' }} />
           Explainable Design Rationale (XDR)
         </h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '12.5px', marginTop: '3px', lineHeight: 1.5 }}>
@@ -55,8 +55,8 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
 
       {/* Concept Preview Card */}
       <div style={{
-        background:    'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(6,182,212,0.05))',
-        border:        '1px solid rgba(124,58,237,0.2)',
+        background:    'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(251,113,133,0.05))',
+        border:        '1px solid rgba(236,72,153,0.2)',
         borderRadius:  'var(--radius-lg)',
         padding:       '16px',
         display:       'flex',
@@ -73,7 +73,7 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
               fontWeight:         800,
               letterSpacing:      '-0.025em',
               marginTop:          '4px',
-              background:         'linear-gradient(135deg, white, #c4b5fd)',
+              background:         'linear-gradient(135deg, white, #fbcfe8)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               lineHeight:         1.2,
@@ -146,7 +146,7 @@ export const RationalePanel: React.FC<RationalePanelProps> = ({ rationale }) => 
                       fontSize:     '10px',
                       background:   'var(--color-primary-dim)',
                       color:        'var(--color-primary-light)',
-                      border:       '1px solid rgba(124,58,237,0.2)',
+                      border:       '1px solid rgba(236,72,153,0.2)',
                       padding:      '1px 7px',
                       borderRadius: '9999px',
                       fontWeight:   700,
