@@ -1,112 +1,244 @@
-# 🧠 Adversaria AI – Adversarial Multi-Agent Creative Engine
+<div align="center">
 
-> **A production-grade AI agent orchestration platform featuring debate-driven reasoning, dynamic agent spawning, explainable AI, and automated evaluation pipelines.**
+<img src="https://capsule-render.vercel.app/api?type=waving&height=280&color=gradient&text=Adversaria%20AI&fontSize=70&fontColor=ffffff&animation=fadeIn"/>
 
-![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688)
-![React](https://img.shields.io/badge/React-Frontend-61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+<br>
 
----
+<img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&duration=3000&pause=1200&color=00F7FF&center=true&vCenter=true&width=950&lines=Adversarial+Multi-Agent+Creative+Engine;Production+Grade+AI+Orchestration;Debate+Driven+Reasoning;Explainable+AI;Dynamic+Agent+Spawning;Built+with+FastAPI+%2B+React+%2B+LangGraph"/>
 
-# 🚀 Overview
+<br><br>
 
-Adversaria AI is an advanced **Multi-Agent AI System** that enables multiple specialized AI agents to collaborate, debate, critique, and synthesize ideas into high-quality outputs.
+<img src="https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python"/>
+<img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi"/>
+<img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react"/>
+<img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript"/>
+<img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge"/>
 
-Unlike traditional AI wrappers, Adversaria AI introduces an **Adversarial Reasoning Architecture**, where multiple autonomous agents challenge each other's outputs before producing a final response.
+<br><br>
+
+<img src="https://github-readme-stats.vercel.app/api?username=kriss2012&show_icons=true&theme=tokyonight&hide_border=true"/>
+
+</div>
+
+<hr>
+
+<div align="center">
+
+<h1>🧠 Adversaria AI</h1>
+
+<h3>Adversarial Multi-Agent Creative Engine</h3>
+
+</div>
+
+<blockquote>
+
+<b>A production-grade AI agent orchestration platform featuring debate-driven reasoning, dynamic agent spawning, explainable AI, and automated evaluation pipelines.</b>
+
+</blockquote>
+
+<hr>
+
+<div align="center">
+
+<h2>🚀 Overview</h2>
+
+</div>
+
+<p>
+
+Adversaria AI is an advanced <b>Multi-Agent AI System</b> that enables multiple specialized AI agents to collaborate, debate, critique, and synthesize ideas into high-quality outputs.
+
+Unlike traditional AI wrappers, Adversaria AI introduces an <b>Adversarial Reasoning Architecture</b>, where multiple autonomous agents challenge each other's outputs before producing a final response.
+
+</p>
+
+<p>
 
 The system focuses on:
 
-- 🧠 Multi-Agent Collaboration
-- ⚔️ Debate-Driven Reasoning
-- 🧩 Dynamic Agent Spawning
-- 📊 Explainable Decision Making (XDR)
-- 📈 Built-in Evaluation Framework
-- ⚡ Production-Ready Infrastructure
+</p>
 
----
+<ul>
 
-# ✨ Features
+<li>🧠 Multi-Agent Collaboration</li>
 
-## 🤖 Multi-Agent Pipeline
+<li>⚔️ Debate-Driven Reasoning</li>
 
-- Planner Agent
-- Research Agent
-- Generator Agent
-- Critic Agent
-- Debate Agent
-- Synthesizer Agent
-- Evaluator Agent
-- Memory Agent
+<li>🧩 Dynamic Agent Spawning</li>
 
----
+<li>📊 Explainable Decision Making (XDR)</li>
 
-## ⚔️ Debate Architecture
+<li>📈 Built-in Evaluation Framework</li>
+
+<li>⚡ Production-Ready Infrastructure</li>
+
+</ul>
+
+<hr>
+
+<div align="center">
+
+<h2>✨ Features</h2>
+
+</div>
+
+<h3>🤖 Multi-Agent Pipeline</h3>
+
+<ul>
+
+<li>Planner Agent</li>
+
+<li>Research Agent</li>
+
+<li>Generator Agent</li>
+
+<li>Critic Agent</li>
+
+<li>Debate Agent</li>
+
+<li>Synthesizer Agent</li>
+
+<li>Evaluator Agent</li>
+
+<li>Memory Agent</li>
+
+</ul>
+
+<hr>
+
+<h3>⚔️ Debate Architecture</h3>
+
+<p>
 
 Instead of accepting the first response, agents:
 
-- Challenge assumptions
-- Detect hallucinations
-- Produce counterarguments
-- Improve reasoning quality
-- Vote on the best solution
+</p>
 
----
+<ul>
 
-## 🧠 Explainable AI (XDR)
+<li>Challenge assumptions</li>
+
+<li>Detect hallucinations</li>
+
+<li>Produce counterarguments</li>
+
+<li>Improve reasoning quality</li>
+
+<li>Vote on the best solution</li>
+
+</ul>
+
+<hr>
+
+<h3>🧠 Explainable AI (XDR)</h3>
+
+<p>
 
 Every response contains:
 
-- Agent reasoning
-- Decision path
-- Evidence
-- Criticism
-- Confidence score
+</p>
+
+<ul>
+
+<li>Agent reasoning</li>
+
+<li>Decision path</li>
+
+<li>Evidence</li>
+
+<li>Criticism</li>
+
+<li>Confidence score</li>
+
+</ul>
+
+<p>
 
 making every generated answer fully traceable.
 
----
+</p>
 
-## 📊 Evaluation Dashboard
+<hr>
+
+<h3>📊 Evaluation Dashboard</h3>
+
+<p>
 
 Built-in evaluation system measuring:
 
-- Response Quality
-- Consistency
-- Hallucination Rate
-- Agent Agreement
-- Confidence Score
-- Processing Time
+</p>
 
----
+<ul>
 
-## ⚡ Real-Time Streaming
+<li>Response Quality</li>
 
-- Server Sent Events (SSE)
-- Live agent reasoning
-- Real-time pipeline visualization
-- Progressive response generation
+<li>Consistency</li>
 
----
+<li>Hallucination Rate</li>
 
-## 📚 Knowledge Base
+<li>Agent Agreement</li>
+
+<li>Confidence Score</li>
+
+<li>Processing Time</li>
+
+</ul>
+
+<hr>
+
+<h3>⚡ Real-Time Streaming</h3>
+
+<ul>
+
+<li>Server Sent Events (SSE)</li>
+
+<li>Live agent reasoning</li>
+
+<li>Real-time pipeline visualization</li>
+
+<li>Progressive response generation</li>
+
+</ul>
+
+<hr>
+
+<h3>📚 Knowledge Base</h3>
+
+<p>
 
 Supports:
 
-- Vector Search
-- Semantic Retrieval
-- Document Ingestion
-- Embedding Storage
-- Long-Term Memory
+</p>
 
-Powered by **Qdrant**.
+<ul>
 
----
+<li>Vector Search</li>
 
-# 🏗️ Architecture
+<li>Semantic Retrieval</li>
 
-```
+<li>Document Ingestion</li>
+
+<li>Embedding Storage</li>
+
+<li>Long-Term Memory</li>
+
+</ul>
+
+<p>
+
+Powered by <b>Qdrant</b>.
+
+</p>
+
+<hr>
+
+<div align="center">
+
+<h2>🏗️ Architecture</h2>
+
+</div>
+
+```text
                  User Prompt
                       │
                       ▼
@@ -131,11 +263,23 @@ Powered by **Qdrant**.
               Final AI Response
 ```
 
----
+<hr>
 
-# 📂 Project Structure
+<div align="center">
 
-```
+<img src="https://capsule-render.vercel.app/api?type=rect&height=120&text=Project%20Structure&fontSize=45&color=gradient"/>
+
+</div>
+<hr>
+
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=rect&height=120&color=gradient&text=Project%20Structure&fontSize=45&fontColor=ffffff"/>
+
+</div>
+
+<pre>
+
 Adversaria-AI/
 
 ├── Frontend/
@@ -167,63 +311,110 @@ Adversaria-AI/
 │
 ├── README.md
 └── LICENSE
-```
 
----
+</pre>
 
-# 🛠️ Tech Stack
+<hr>
 
-## Frontend
+<div align="center">
 
-- React
-- Vite
-- TypeScript
-- Tailwind CSS
-- Framer Motion
+<img src="https://capsule-render.vercel.app/api?type=rect&height=120&color=gradient&text=Technology%20Stack&fontSize=45&fontColor=ffffff"/>
 
----
+</div>
 
-## Backend
+<h2>Frontend</h2>
 
-- Python 3.11+
-- FastAPI
-- LangGraph
-- Celery
-- SQLAlchemy 2.0
-- AsyncIO
+<ul>
 
----
+<li>⚛️ React</li>
 
-## Database
+<li>⚡ Vite</li>
 
-- PostgreSQL
-- Redis
-- Qdrant
-- MinIO
+<li>📘 TypeScript</li>
 
----
+<li>🎨 Tailwind CSS</li>
 
-## AI
+<li>✨ Framer Motion</li>
 
-- Anthropic Claude
-- OpenAI
-- LangChain
-- LangGraph
+</ul>
 
----
+<hr>
 
-## DevOps
+<h2>Backend</h2>
 
-- Docker
-- Docker Compose
-- Flower
-- GitHub Actions
+<ul>
 
----
+<li>🐍 Python 3.11+</li>
 
-# 🚀 Installation
+<li>⚡ FastAPI</li>
 
-## Clone Repository
+<li>🧠 LangGraph</li>
+
+<li>⚙️ Celery</li>
+
+<li>🗄 SQLAlchemy 2.0</li>
+
+<li>🚀 AsyncIO</li>
+
+</ul>
+
+<hr>
+
+<h2>Database</h2>
+
+<ul>
+
+<li>🐘 PostgreSQL</li>
+
+<li>⚡ Redis</li>
+
+<li>📚 Qdrant</li>
+
+<li>📦 MinIO</li>
+
+</ul>
+
+<hr>
+
+<h2>AI</h2>
+
+<ul>
+
+<li>🤖 Anthropic Claude</li>
+
+<li>🧠 OpenAI</li>
+
+<li>🔗 LangChain</li>
+
+<li>🕸 LangGraph</li>
+
+</ul>
+
+<hr>
+
+<h2>DevOps</h2>
+
+<ul>
+
+<li>🐳 Docker</li>
+
+<li>📦 Docker Compose</li>
+
+<li>🌸 Flower</li>
+
+<li>🚀 GitHub Actions</li>
+
+</ul>
+
+<hr>
+
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=rect&height=120&color=gradient&text=Installation&fontSize=45&fontColor=ffffff"/>
+
+</div>
+
+<h2>📥 Clone Repository</h2>
 
 ```bash
 git clone https://github.com/kriss2012/Adversaria-AI.git
@@ -231,9 +422,9 @@ git clone https://github.com/kriss2012/Adversaria-AI.git
 cd Adversaria-AI
 ```
 
----
+<hr>
 
-# Backend Setup
+<h2>⚙️ Backend Setup</h2>
 
 ```bash
 cd backend
@@ -273,9 +464,9 @@ Run Celery Worker
 celery -A adversaria.workers.celery_app.celery_app worker --loglevel=info
 ```
 
----
+<hr>
 
-# Frontend Setup
+<h2>💻 Frontend Setup</h2>
 
 ```bash
 cd Frontend
@@ -285,41 +476,45 @@ npm install
 npm run dev
 ```
 
-Frontend:
+Frontend
 
-```
+```text
 http://localhost:5173
 ```
 
-Backend API:
+Backend API
 
-```
+```text
 http://localhost:8000
 ```
 
-Swagger Docs:
+Swagger Docs
 
-```
+```text
 http://localhost:8000/docs
 ```
 
-Flower Dashboard:
+Flower Dashboard
 
-```
+```text
 http://localhost:5555
 ```
 
-Qdrant Dashboard:
+Qdrant Dashboard
 
-```
+```text
 http://localhost:6333
 ```
 
----
+<hr>
 
-# 🔄 Workflow
+<div align="center">
 
-```
+<img src="https://capsule-render.vercel.app/api?type=rect&height=120&color=gradient&text=Workflow&fontSize=45&fontColor=ffffff"/>
+
+</div>
+
+```text
 User Prompt
       │
       ▼
@@ -347,127 +542,4 @@ Evaluation
 Streaming Response
 ```
 
----
-
-# 📊 Evaluation Metrics
-
-Adversaria AI automatically evaluates every response using:
-
-- Accuracy
-- Faithfulness
-- Completeness
-- Creativity
-- Confidence
-- Hallucination Detection
-- Latency
-- Cost Estimation
-
----
-
-# 🔐 Environment Variables
-
-```env
-ANTHROPIC_API_KEY=
-
-OPENAI_API_KEY=
-
-DATABASE_URL=
-
-REDIS_URL=
-
-QDRANT_URL=
-
-MINIO_ENDPOINT=
-
-JWT_SECRET=
-
-LOG_LEVEL=INFO
-```
-
----
-
-# 📸 Screenshots
-
-```
-screenshots/
-
-├── dashboard.png
-├── debate.png
-├── pipeline.png
-├── xdr_trace.png
-└── evaluation.png
-```
-
----
-
-# 🗺️ Roadmap
-
-- Multi-model orchestration
-- Voice-enabled agents
-- MCP Server Integration
-- Plugin Marketplace
-- Self-improving agent memory
-- Distributed agent clusters
-- Fine-tuned evaluator models
-- Agent marketplace
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-
-2. Create a feature branch
-
-```bash
-git checkout -b feature-name
-```
-
-3. Commit your changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push to GitHub
-
-```bash
-git push origin feature-name
-```
-
-5. Open a Pull Request
-
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-# 👨‍💻 Author
-
-**Krishna Patil**
-
-- GitHub: https://github.com/kriss2012
-
----
-
-# ⭐ Support
-
-If you find this project useful, please give it a ⭐ on GitHub.
-
-Your support helps improve Adversaria AI and encourages future development.
-
----
-
-## 💡 Vision
-
-> **"The future of AI isn't a single model—it's intelligent agents that reason, debate, critique, and collaborate to solve complex problems."**
-
-**Adversaria AI** is built to make that future a reality.
-
-
-**Love By KiriGen By💕**
+<hr>
