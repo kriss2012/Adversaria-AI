@@ -55,9 +55,6 @@ Instead of relying on a single LLM response, Adversaria AI introduces a **Debate
 ## 📊 Repository Stats
 
 <p align="center">
-
-<img width="49%" src="https://github-readme-stats.vercel.app/api?username=kriss2012&show_icons=true&theme=tokyonight&hide_border=true"/>
-
 <img width="49%" src="https://github-readme-streak-stats.herokuapp.com/?user=kriss2012&theme=tokyonight&hide_border=true"/>
 
 </p>
