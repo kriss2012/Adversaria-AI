@@ -29,7 +29,7 @@
 
 # 🧠 Adversaria AI
 
-> **A Production-Grade Adversarial Multi-Agent AI Platform**
+> **A Production-Grade Adversarial Multi-Agent AI Platform(KiriGen Tech)**
 
 Adversaria AI is an advanced AI orchestration platform where multiple intelligent agents collaborate, debate, criticize, and synthesize responses before delivering a final answer.
 
