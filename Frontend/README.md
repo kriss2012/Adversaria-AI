@@ -1,32 +1,85 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+<img src="https://vitejs.dev/logo.svg" width="120"/>
 
-Currently, two official plugins are available:
+# ⚛️ React + TypeScript + Vite
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+<h3>
+A Modern Frontend Boilerplate with
+<b>React • TypeScript • Vite • HMR • Oxlint</b>
+</h3>
 
-## React Compiler
+<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
+<img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>
+<img src="https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white"/>
+<img src="https://img.shields.io/badge/Oxlint-Fast-blueviolet?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/License-MIT-success?style=for-the-badge"/>
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+</div>
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+# 🌟 Project Overview
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+<table>
+<tr>
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+<td width="50%">
+
+## 🚀 What is this?
+
+A modern starter template for building high-performance web applications using:
+
+- ⚛️ React
+- 📘 TypeScript
+- ⚡ Vite
+- 🔥 Hot Module Replacement
+- 🛡 Oxlint
+- 🎯 Production Ready
+
+</td>
+
+<td width="50%">
+
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="180"/>
+
+</td>
+
+</tr>
+</table>
+
+---
+
+# 🏗 Architecture
+
+<div align="center">
+
+```text
+                    ┌────────────────────────────┐
+                    │        Developer           │
+                    └─────────────┬──────────────┘
+                                  │
+                                  ▼
+                    ┌────────────────────────────┐
+                    │      React Components      │
+                    └─────────────┬──────────────┘
+                                  │
+                                  ▼
+                    ┌────────────────────────────┐
+                    │      TypeScript Logic      │
+                    └─────────────┬──────────────┘
+                                  │
+                                  ▼
+                    ┌────────────────────────────┐
+                    │       Vite Dev Server      │
+                    └─────────────┬──────────────┘
+                                  │
+                                  ▼
+                    ┌────────────────────────────┐
+                    │     Hot Module Reload      │
+                    └─────────────┬──────────────┘
+                                  │
+                                  ▼
+                    ┌────────────────────────────┐
+                    │     Optimized Browser      │
+                    └────────────────────────────┘
