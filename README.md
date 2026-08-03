@@ -27,7 +27,7 @@
 
 ---
 
-# 🧠 Adversaria AI
+# 🧠 Adversaria AI(KiriGen Tech)
 
 > **A Production-Grade Adversarial Multi-Agent AI Platform(KiriGen Tech)**
 
