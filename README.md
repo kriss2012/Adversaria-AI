@@ -945,3 +945,17 @@ See the `LICENSE` file for more information.
 <img src="https://capsule-render.vercel.app/api?type=waving&section=footer&height=180&color=0:0F2027,50:203A43,100:2C5364"/>
 
 </div>
+
+---
+
+## Security
+
+Please refer to [SECURITY.md](SECURITY.md) for vulnerability reporting guidelines.
+
+## Contributing
+
+Contributions are welcome! Please review [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and development process.
+
+## Author
+
+Developed and maintained by **[Krishna Patil](https://github.com/kriss2012)**.

@@ -1,2 +1,18 @@
 backend/.env
 backend/.env.example
+
+# Standards & hygiene
+.env.local
+.env.*.local
+*.pem
+*.key
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+dist/
+build/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
