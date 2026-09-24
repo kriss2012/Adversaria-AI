@@ -45,8 +45,19 @@ def route_after_critique(state: DesignState) -> str:
     if not last_critique:
         return "senior_designer"
 
-    verdict = last_critique.get("final_verdict", ConceptStatus.ITERATED.value)
-    confidence = last_critique.get("consensus_score", 0)
+    if hasattr(last_critique, "final_verdict"):
+        verdict = last_critique.final_verdict
+        if hasattr(verdict, "value"):
+            verdict = verdict.value
+        confidence = getattr(last_critique, "consensus_score", 0)
+    elif isinstance(last_critique, dict):
+        verdict = last_critique.get("final_verdict", ConceptStatus.ITERATED.value)
+        if hasattr(verdict, "value"):
+            verdict = verdict.value
+        confidence = last_critique.get("consensus_score", 0)
+    else:
+        verdict = ConceptStatus.ITERATED.value
+        confidence = 0
 
     # High confidence approval → skip HITL, go to eval
     if verdict == ConceptStatus.APPROVED.value and confidence >= 80:

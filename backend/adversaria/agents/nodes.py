@@ -52,6 +52,12 @@ _PRICING: dict[str, dict[str, float]] = {
 }
 
 
+def _format_rule(r: Any) -> str:
+    r_type = getattr(r, "rule_type", r.get("rule_type", "rule") if isinstance(r, dict) else "rule")
+    r_text = getattr(r, "rule_text", r.get("rule_text", "") if isinstance(r, dict) else str(r))
+    return f"[{r_type}] {r_text}"
+
+
 def _cost_usd(model: str, prompt_tokens: int, completion_tokens: int) -> float:
     p = _PRICING.get(model, {"input": 3.0, "output": 15.0})
     return (prompt_tokens * p["input"] + completion_tokens * p["output"]) / 1_000_000
@@ -153,7 +159,7 @@ async def creative_director_node(state: DesignState) -> dict[str, Any]:
     structured = llm.with_structured_output(DirectorOutput)
 
     rules_summary = "\n".join(
-        f"[{r['rule_type']}] {r['rule_text']}" for r in state.brand_rules[:8]
+        _format_rule(r) for r in state.brand_rules[:8]
     )
     moodboard_summary = ""
     if getattr(state, "moodboard_descriptions", None):
@@ -202,17 +208,18 @@ async def senior_designer_node(state: DesignState) -> dict[str, Any]:
     structured = llm.with_structured_output(DesignerOutput)
 
     rules_summary = "\n".join(
-        f"[{r['rule_type']}] {r['rule_text']}" for r in state.brand_rules[:6]
+        _format_rule(r) for r in state.brand_rules[:6]
     )
     moodboard_summary = ""
     if getattr(state, "moodboard_descriptions", None):
         moodboard_summary = "\nVisual reference/moodboard styles:\n" + "\n".join(
             f"- {desc}" for desc in state.moodboard_descriptions
         )
-    prior_critique = (
-        state.critique_log[-1]["director_synthesis"]
-        if state.critique_log else "First iteration — no prior critique."
-    )
+    if state.critique_log:
+        last_c = state.critique_log[-1]
+        prior_critique = getattr(last_c, "director_synthesis", last_c.get("director_synthesis", "") if isinstance(last_c, dict) else "")
+    else:
+        prior_critique = "First iteration — no prior critique."
     user_msg = (
         f"Creative Strategy: {state.creative_strategy}\n"
         f"Platform: {state.platform.value} ({specs['width']}x{specs['height']}px)\n"
@@ -332,7 +339,7 @@ async def _run_single_critic(
     llm = _llm(_settings.critic_model, max_tokens=800)
     structured = llm.with_structured_output(CriticOutput)
 
-    rules_text = "\n".join(f"[{r['rule_type']}] {r['rule_text']}" for r in brand_rules[:5])
+    rules_text = "\n".join(_format_rule(r) for r in brand_rules[:5])
     user_msg = (
         f"Concept:\n{json.dumps(concept, indent=2)}\n\n"
         f"Brand Rules:\n{rules_text}\n"

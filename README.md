@@ -513,13 +513,8 @@ docker-compose down
 POST /api/v1/chat
 ```
 
-Example
-
-```json
-{
-  "prompt":"Explain Quantum Computing"
-}
-```
+Example request parameter:
+- `prompt` (string): Input prompt to evaluate (e.g., `"Explain Quantum Computing"`).
 
 ---
 
