@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
+    auth_email: str = ""
+    auth_password: str = ""
 
     # ── Anthropic / Claude ────────────────────────────────────────────────────
     anthropic_api_key: str

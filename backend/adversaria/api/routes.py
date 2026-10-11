@@ -20,8 +20,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
@@ -58,10 +59,17 @@ router = APIRouter(prefix="/v1")
 _bearer = HTTPBearer()
 
 
+def ensure_jwt_secret_configured() -> None:
+    secret = _settings.jwt_secret
+    if secret == "change-me" or len(secret) < 32:
+        raise HTTPException(503, "JWT_SECRET must be a unique value with at least 32 characters")
+
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
 ) -> str:
     """Decode and validate JWT. Raises 401 on any failure."""
+    ensure_jwt_secret_configured()
     try:
         payload = jwt.decode(
             credentials.credentials,
@@ -80,6 +88,39 @@ async def get_current_user(
 limiter = Limiter(key_func=get_remote_address)
 
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+def authenticate_credentials(email: str, password: str) -> dict[str, str | int]:
+    if not _settings.auth_email or not _settings.auth_password:
+        raise HTTPException(503, "Authentication is not configured")
+    ensure_jwt_secret_configured()
+
+    email_matches = secrets.compare_digest(email.casefold(), _settings.auth_email.casefold())
+    password_matches = secrets.compare_digest(password, _settings.auth_password)
+    if not email_matches or not password_matches:
+        raise HTTPException(401, "Invalid email or password")
+
+    expires_in = 30 * 60
+    token = jwt.encode(
+        {
+            "sub": _settings.auth_email,
+            "exp": datetime.now(timezone.utc) + timedelta(seconds=expires_in),
+        },
+        _settings.jwt_secret,
+        algorithm=_settings.jwt_algorithm,
+    )
+    return {"access_token": token, "token_type": "bearer", "expires_in": expires_in}
+
+
+@router.post("/auth/token")
+@limiter.limit("10/minute")
+async def create_access_token(request: Request, credentials: LoginRequest) -> dict[str, str | int]:
+    return authenticate_credentials(credentials.email, credentials.password)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Brand management
 # ─────────────────────────────────────────────────────────────────────────────
@@ -94,8 +135,9 @@ async def create_brand(
     _user: str = Depends(get_current_user),
 ) -> dict[str, str]:
     existing = await db.execute(select(Brand).where(Brand.name == name))
-    if existing.scalar_one_or_none():
-        raise HTTPException(400, f"Brand '{name}' already exists")
+    existing_brand = existing.scalar_one_or_none()
+    if existing_brand:
+        return {"brand_id": existing_brand.id, "name": existing_brand.name}
 
     brand = Brand(
         id=str(uuid.uuid4()),

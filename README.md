@@ -415,6 +415,11 @@ yarn
 
 Create a `.env` file inside the backend directory.
 
+Set `AUTH_EMAIL`, `AUTH_PASSWORD`, and `JWT_SECRET` to enable login. The API
+issues 30-minute bearer tokens; do not use placeholder values in a deployed
+environment. The frontend uses `http://localhost:8000` by default. To point it
+elsewhere, set `VITE_API_BASE_URL` in `Frontend/.env` to the backend origin.
+
 ```env
 OPENAI_API_KEY=your_api_key
 
