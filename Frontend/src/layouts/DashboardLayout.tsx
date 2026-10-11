@@ -28,7 +28,7 @@ export const DashboardLayout: React.FC = () => {
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'Adversaria AI';
 
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    sessionStorage.removeItem('access_token');
     navigate('/login');
   };
 

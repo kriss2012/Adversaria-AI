@@ -6,7 +6,7 @@ import { PlaceholderPage } from './pages/PlaceholderPage';
 import { DashboardLayout } from './layouts/DashboardLayout';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuth = localStorage.getItem('auth') === 'true';
+  const isAuth = Boolean(sessionStorage.getItem('access_token'));
   return isAuth ? <>{children}</> : <Navigate to="/login" replace />;
 };
 

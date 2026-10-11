@@ -4,22 +4,41 @@ import { Sparkles, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('test@adversaria.ai');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  if (localStorage.getItem('auth') === 'true') {
+  if (sessionStorage.getItem('access_token')) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('auth', 'true');
+    setError(null);
+
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+      const response = await fetch(`${apiBase}/v1/auth/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.detail ?? 'Unable to sign in. Check your credentials and try again.');
+      }
+
+      sessionStorage.setItem('access_token', payload.access_token);
       navigate('/dashboard');
-    }, 600);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : 'Unable to sign in.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,6 +127,8 @@ export const Login: React.FC = () => {
             </div>
           </div>
 
+          {error && <p role="alert" className="error-banner">{error}</p>}
+
           {/* Submit */}
           <button
             id="login-submit-btn"
@@ -129,9 +150,6 @@ export const Login: React.FC = () => {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-dark)', marginTop: '24px' }}>
-          Demo credentials pre-filled · No real auth required
-        </p>
       </div>
     </div>
   );

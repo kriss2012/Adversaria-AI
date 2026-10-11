@@ -14,20 +14,42 @@ export interface SimStep {
   error?: string;
 }
 
-const API_BASE = 'http://localhost:8000/v1';
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'}/v1`;
+
+async function authorizedFetch(path: string, token: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  if (response.status === 401) {
+    sessionStorage.removeItem('access_token');
+    window.location.assign('/login');
+  }
+  return response;
+}
 
 export async function runAgentSimulation(
   brief: BriefData,
   onStep: (step: SimStep) => void
 ): Promise<void> {
   const ts = () => new Date().toLocaleTimeString('en-US', { hour12: false });
-  
-  // 1. Ensure brand exists, or create a mock brand ID for now if we haven't implemented full brand management in UI
-  let brandId = 'b0000000-0000-0000-0000-000000000000'; // Default test brand
-  
+  const token = sessionStorage.getItem('access_token');
+
+  const reportError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : 'An unexpected API error occurred.';
+    onStep({
+      delayMs: 0,
+      error: message,
+      logEntry: { agentName: 'System', role: 'Error', message, status: 'error', timestamp: ts() },
+    });
+  };
+
+  if (!token) {
+    reportError(new Error('Your session has expired. Please sign in again.'));
+    return;
+  }
+
   try {
-    // Try to create the brand
-    const brandRes = await fetch(`${API_BASE}/brands`, {
+    const brandRes = await authorizedFetch('/brands', token, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,110 +59,110 @@ export async function runAgentSimulation(
         description: 'Frontend generated brand'
       })
     });
-    
-    if (brandRes.ok) {
-      const data = await brandRes.json();
-      brandId = data.brand_id;
-    } else if (brandRes.status === 400) {
-      // Already exists, just use a dummy or try to fetch (Backend doesn't have list brands yet, so we'll just ignore for now and assume the mock brand is fine or handle it properly if we had a get brand by name)
-    }
-  } catch (e) {
-    console.warn("Failed to create brand, using test UUID", e);
-  }
 
-  // 2. Submit the brief to create a job
-  let jobId = '';
-  try {
-    const res = await fetch(`${API_BASE}/jobs`, {
+    if (!brandRes.ok) {
+      const body = await brandRes.json().catch(() => null);
+      throw new Error(body?.detail ?? `Brand creation failed (${brandRes.status}).`);
+    }
+    const brand = await brandRes.json();
+
+    const jobResponse = await authorizedFetch('/jobs', token, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        brand_id: brandId,
+        brand_id: brand.brand_id,
         brief: brief.prompt,
         platform: brief.platform,
         tone: brief.tone,
         uploaded_asset_keys: []
       })
     });
-    
-    if (!res.ok) {
-      throw new Error(`Failed to create job: ${await res.text()}`);
+
+    if (!jobResponse.ok) {
+      const body = await jobResponse.json().catch(() => null);
+      throw new Error(body?.detail ?? `Job creation failed (${jobResponse.status}).`);
     }
-    
-    const data = await res.json();
-    jobId = data.job_id;
-  } catch (err: any) {
-    onStep({
-      delayMs: 0,
-      error: err.message,
-      logEntry: { agentName: 'System', role: 'Error', message: err.message, status: 'error', timestamp: ts() }
+    const job = await jobResponse.json();
+
+    const streamResponse = await authorizedFetch(`/jobs/${job.job_id}/stream`, token, {
+      headers: { Accept: 'text/event-stream' },
     });
-    return;
-  }
+    if (!streamResponse.ok || !streamResponse.body) {
+      const body = await streamResponse.json().catch(() => null);
+      throw new Error(body?.detail ?? `Progress stream failed (${streamResponse.status}).`);
+    }
 
-  // 3. Connect to SSE Stream
-  return new Promise((resolve, _reject) => {
-    const eventSource = new EventSource(`${API_BASE}/jobs/${jobId}/stream`);
+    const reader = streamResponse.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finished = false;
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("SSE Event:", data);
+    while (!finished) {
+      const { value, done } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      const frames = buffer.split(/\r?\n\r?\n/);
+      buffer = frames.pop() ?? '';
 
-      if (data.event === 'connected') {
-        onStep({
-          delayMs: 0,
-          logEntry: { agentName: 'System', role: 'Orchestrator', message: `Connected to pipeline. Job ID: ${jobId}`, status: 'done', timestamp: ts() }
-        });
-        return;
-      }
+      for (const frame of frames) {
+        const eventData = frame.split(/\r?\n/).find(line => line.startsWith('data:'))?.slice(5).trim();
+        if (!eventData) continue;
 
-      // Handle normal status messages
-      if (data.status) {
-        // Map backend state to frontend visualizer
-        onStep({
-          delayMs: 0,
-          logEntry: {
-            agentName: data.agent || 'System',
-            role: 'Agent',
-            message: `Status: ${data.status} ${data.message ? '- ' + data.message : ''}`,
-            status: data.status === 'error' ? 'error' : 'done',
-            timestamp: ts()
-          },
-          activeAgent: data.agent,
-        });
+        const data = JSON.parse(eventData) as {
+          event?: string;
+          status?: string;
+          agent?: string;
+          message?: string;
+        };
 
-        if (data.status === 'complete' || data.status === 'error') {
-          eventSource.close();
-          
-          if (data.status === 'complete') {
-            // Fetch final job data
-            fetch(`${API_BASE}/jobs/${jobId}`)
-              .then(res => res.json())
-              .then(jobData => {
-                onStep({
-                  delayMs: 0,
-                  generatedImageUrl: jobData.generated_image_url,
-                  evalScores: jobData.eval_scores,
-                  rationale: jobData.rationale,
-                  logEntry: {
-                    agentName: 'System',
-                    role: 'Complete',
-                    message: `Job complete. Image URL: ${jobData.generated_image_url}`,
-                    status: 'done',
-                    timestamp: ts()
-                  }
-                });
-              });
-          }
-          resolve();
+        if (data.event === 'connected') {
+          onStep({
+            delayMs: 0,
+            logEntry: {
+              agentName: 'System', role: 'Orchestrator',
+              message: `Connected to pipeline. Job ID: ${job.job_id}`,
+              status: 'done', timestamp: ts(),
+            },
+          });
+          continue;
+        }
+
+        if (data.status) {
+          onStep({
+            delayMs: 0,
+            logEntry: {
+              agentName: data.agent || 'System',
+              role: 'Agent',
+              message: `Status: ${data.status}${data.message ? ` - ${data.message}` : ''}`,
+              status: data.status === 'error' ? 'error' : 'done',
+              timestamp: ts(),
+            },
+            activeAgent: data.agent,
+          });
+        }
+
+        if (data.status === 'complete') {
+          const resultResponse = await authorizedFetch(`/jobs/${job.job_id}`, token);
+          if (!resultResponse.ok) throw new Error(`Could not load job result (${resultResponse.status}).`);
+          const result = await resultResponse.json();
+          onStep({
+            delayMs: 0,
+            generatedImageUrl: result.generated_image_url,
+            evalScores: result.eval_scores,
+            rationale: result.rationale,
+            logEntry: {
+              agentName: 'System', role: 'Complete',
+              message: 'Job complete.', status: 'done', timestamp: ts(),
+            },
+          });
+          finished = true;
+        } else if (data.status === 'error') {
+          throw new Error(data.message ?? 'The generation pipeline failed.');
         }
       }
-    };
 
-    eventSource.onerror = (err) => {
-      console.error("EventSource failed:", err);
-      eventSource.close();
-      resolve(); // or reject
-    };
-  });
+      if (done) finished = true;
+    }
+  } catch (error) {
+    reportError(error);
+  }
 }
